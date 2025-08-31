@@ -26,14 +26,14 @@ resource "google_container_node_pool" "devops_nodes" {
   name       = "devops-node-pool"
   location   = var.region
   cluster    = google_container_cluster.devops_cluster.name
-  node_count = 1  # Reduzir de 2 para 1 nó
+  node_count = 1 # Reduzir de 2 para 1 nó
 
   node_config {
     preemptible  = true
-    machine_type = "e2-small"  # Usar e2-small em vez de e2-medium
-    disk_size_gb = 20          # Adicionar tamanho específico menor
-    disk_type    = "pd-standard"  # Usar disco padrão em vez de SSD
-    
+    machine_type = "e2-small"    # Usar e2-small em vez de e2-medium
+    disk_size_gb = 20            # Adicionar tamanho específico menor
+    disk_type    = "pd-standard" # Usar disco padrão em vez de SSD
+
     oauth_scopes = [
       "https://www.googleapis.com/auth/logging.write",
       "https://www.googleapis.com/auth/monitoring",
@@ -42,10 +42,10 @@ resource "google_container_node_pool" "devops_nodes" {
 
     tags = ["gke-node"]
   }
-  
+
   autoscaling {
     min_node_count = 1
-    max_node_count = 2  # Reduzir máximo também
+    max_node_count = 2 # Reduzir máximo também
   }
 
   management {

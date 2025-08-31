@@ -9,11 +9,11 @@ output "app_url" {
 }
 
 output "cluster_name" {
-   description = "Nome do cluster GKE"
-   value       = google_container_cluster.devops_cluster.name
- }
+  description = "Nome do cluster GKE"
+  value       = google_container_cluster.devops_cluster.name
+}
 
 output "cluster_location" {
-   description = "Localização do cluster"
-   value       = google_container_cluster.devops_cluster.location
+  description = "Localização do cluster"
+  value       = google_container_cluster.devops_cluster.location
 }
