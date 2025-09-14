@@ -55,8 +55,8 @@ app.get('/health', (req, res) => {
 
 app.get('/api/info', (req, res) => {
   res.json({
-    app: 'DevOps App GCP',
-    version: '1.0.0',
+    app: 'DevOps App GCP Aula 4',
+    version: '2.0.0',
     environment: process.env.NODE_ENV || 'development',
     timestamp: new Date().toISOString()
   });
