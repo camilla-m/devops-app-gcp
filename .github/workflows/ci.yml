@@ -34,11 +34,39 @@ jobs:
       run: npm run lint
     
     - name: Run unit tests
-      run: npm test -- --coverage
+      run: npm test -- --coverage --testPathIgnorePatterns=integration
     
     - name: Upload coverage
       uses: codecov/codecov-action@v3
       if: success()
+
+  integration-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Build Docker containers
+      run: docker-compose up -d --build
+      
+    - name: Wait for services to be ready
+      run: |
+        echo "Waiting for services..."
+        timeout 300 bash -c 'until docker-compose ps | grep "Up"; do sleep 5; done'
+        
+    - name: Check container health
+      run: |
+        docker-compose ps
+        docker-compose logs
+        
+    - name: Run integration tests
+      run: |
+        if docker-compose ps | grep -q "Up"; then
+          npm run test:integration
+        else
+          echo "Docker containers failed to start - skipping integration tests"
+          exit 1
+        fi
 
   # Job 2: Scanning de segurança
   security:
