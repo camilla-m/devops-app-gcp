@@ -958,8 +958,10 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
 # 3. Gerar chave JSON
 gcloud iam service-accounts keys create github-actions-key.json \
   --iam-account=github-actions@$PROJECT_ID.iam.gserviceaccount.com
-```
 
+#4. Rodar npm lint
+npm init @eslint/config
+```
 ### 4.2 Configuração de Secrets no GitHub
 
 No repositório GitHub, configure os seguintes secrets:
