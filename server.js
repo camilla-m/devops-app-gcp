@@ -1,12 +1,52 @@
 const express = require('express');
-const path = require('path');
+const client = require('prom-client');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(express.static('public'));
+// Configuração do Prometheus
+const register = new client.Registry();
+client.collectDefaultMetrics({ register });
 
+// Middlewares
+app.use(express.json());
+
+// Métricas customizadas
+const httpRequestDuration = new client.Histogram({
+  name: 'http_request_duration_seconds',
+  help: 'Duration of HTTP requests in seconds',
+  labelNames: ['method', 'status_code'],
+  registers: [register]
+});
+
+const httpRequestsTotal = new client.Counter({
+  name: 'http_requests_total',
+  help: 'Total number of HTTP requests',
+  labelNames: ['method', 'status_code'],
+  registers: [register]
+});
+
+// Middleware para métricas
+app.use((req, res, next) => {
+  const start = Date.now();
+  
+  res.on('finish', () => {
+    const duration = (Date.now() - start) / 1000;
+    httpRequestDuration
+      .labels(req.method, res.statusCode)
+      .observe(duration);
+    
+    httpRequestsTotal
+      .labels(req.method, res.statusCode)
+      .inc();
+  });
+  
+  next();
+});
+
+// Rotas
 app.get('/health', (req, res) => {
-  res.status(200).json({
+  res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
     uptime: process.uptime()
@@ -18,14 +58,42 @@ app.get('/api/info', (req, res) => {
     app: 'DevOps App GCP',
     version: '1.0.0',
     environment: process.env.NODE_ENV || 'development',
-    pod: process.env.HOSTNAME || 'localhost'
+    timestamp: new Date().toISOString()
   });
 });
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+app.get('/metrics', async (req, res) => {
+  try {
+    res.set('Content-Type', register.contentType);
+    res.end(await register.metrics());
+  } catch (error) {
+    res.status(500).end(error.message);
+  }
 });
 
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
+// Middleware 404
+app.use((req, res) => {
+  res.status(404).json({
+    error: 'Not Found',
+    message: 'The requested resource was not found'
+  });
 });
+
+// Middleware de erro
+app.use((error, req, res, next) => {
+  console.error('Error:', error);
+  res.status(500).json({
+    error: 'Internal Server Error',
+    message: 'Something went wrong'
+  });
+});
+
+// Exportar app para testes
+module.exports = app;
+
+// Iniciar servidor apenas se executado diretamente
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Servidor rodando na porta ${PORT}`);
+  });
+}

@@ -3,14 +3,43 @@ import js from '@eslint/js';
 export default [
   js.configs.recommended,
   {
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'script',
+      globals: {
+        console: 'readonly',
+        process: 'readonly',
+        Buffer: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        module: 'readonly',
+        require: 'readonly',
+        exports: 'readonly',
+        global: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly'
+      }
+    },
     rules: {
-      // Transformar erros em warnings
       'no-unused-vars': 'warn',
-      'no-console': 'warn',
-      
-      // Desabilitar regras específicas
-      'no-undef': 'off',
-      'react/prop-types': 'off',
+      'no-console': 'off'
+    }
+  },
+  {
+    files: ['tests/**/*.js'],
+    languageOptions: {
+      globals: {
+        describe: 'readonly',
+        it: 'readonly',
+        expect: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
+        jest: 'readonly'
+      }
     }
   }
 ];
