@@ -974,7 +974,7 @@ No repositório GitHub, configure os seguintes secrets:
 | `GKE_CLUSTER` | Nome do cluster GKE |
 | `GKE_ZONE` | Zona do cluster |
 
-### 4.3 Atualização da Aplicação com Métricas
+### 4.3 Atualização da Aplicação com Testes
 
 Primeiro, atualize o `package.json` para incluir dependências de teste:
 
