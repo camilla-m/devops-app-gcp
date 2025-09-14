@@ -992,10 +992,12 @@ Primeiro, atualize o `package.json` para incluir dependências de teste:
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "jest --coverage",
-    "test:integration": "jest --config jest.integration.config.js",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "test": "jest --coverage --detectOpenHandles",
+    "test:unit": "jest --coverage --testPathIgnorePatterns=integration --detectOpenHandles",
+    "test:integration": "jest --testPathPattern=integration",
+    "test:watch": "jest --watch",
+    "lint": "eslint . --fix",
+    "lint:check": "eslint ."
   },
   "dependencies": {
     "express": "^4.18.2",
@@ -1004,7 +1006,23 @@ Primeiro, atualize o `package.json` para incluir dependências de teste:
   "devDependencies": {
     "jest": "^29.7.0",
     "supertest": "^6.3.3",
-    "eslint": "^8.52.0"
+    "eslint": "^8.52.0",
+    "@eslint/js": "^8.52.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "coverageDirectory": "coverage",
+    "collectCoverageFrom": [
+      "server.js",
+      "!node_modules/**",
+      "!coverage/**"
+    ],
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "html"
+    ],
+    "testTimeout": 10000
   }
 }
 ```
@@ -1042,13 +1060,15 @@ jobs:
         cache: 'npm'
     
     - name: Install dependencies
-      run: npm ci
+      run: |
+        npm ci
+        npm install --save-dev @eslint/js
     
     - name: Run linting
       run: npm run lint
     
-    - name: Run unit tests
-      run: npm test -- --coverage
+    - name: Run unit tests only
+      run: npm run test:unit
     
     - name: Upload coverage
       uses: codecov/codecov-action@v3
@@ -1071,7 +1091,6 @@ jobs:
       with:
         path: ./
         base: main
-        head: HEAD
 
   # Job 3: Build e teste do Docker
   docker:
@@ -1134,6 +1153,11 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
     
     - name: Setup Google Cloud CLI
       uses: google-github-actions/setup-gcloud@v1
@@ -1142,13 +1166,16 @@ jobs:
         project_id: ${{ secrets.GCP_PROJECT_ID }}
         export_default_credentials: true
     
-    - name: Configure Docker for GCR
-      run: gcloud auth configure-docker
+    - name: Configure Docker for Artifact Registry
+      run: |
+        gcloud auth configure-docker us-central1-docker.pkg.dev
+        gcloud auth configure-docker gcr.io
     
     - name: Get GKE credentials
       run: |
-        gcloud container clusters get-credentials $GKE_CLUSTER \
-          --zone $GKE_ZONE
+        gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER }} \
+          --zone=${{ secrets.GKE_ZONE }} \
+          --project=${{ secrets.GCP_PROJECT_ID }}
     
     - name: Build Docker image
       run: |
@@ -1159,7 +1186,12 @@ jobs:
       run: |
         docker push gcr.io/$PROJECT_ID/$IMAGE:$GITHUB_SHA
         docker push gcr.io/$PROJECT_ID/$IMAGE:latest
-    
+
+    - name: Install GKE gcloud auth plugin
+      run: |
+        gcloud components install gke-gcloud-auth-plugin
+        export USE_GKE_GCLOUD_AUTH_PLUGIN=True
+
     - name: Deploy to GKE
       run: |
         kubectl set image deployment/$DEPLOYMENT_NAME \
@@ -1206,136 +1238,52 @@ describe('DevOps App', () => {
   describe('GET /health', () => {
     it('should return healthy status', async () => {
       const response = await request(app).get('/health');
+      
       expect(response.status).toBe(200);
       expect(response.body).toMatchObject({
         status: 'healthy'
       });
-      expect(response.body.timestamp).toBeDefined();
-      expect(response.body.uptime).toBeDefined();
+      expect(response.body).toHaveProperty('timestamp');
+      expect(response.body).toHaveProperty('uptime');
     });
   });
 
   describe('GET /api/info', () => {
     it('should return application info', async () => {
       const response = await request(app).get('/api/info');
+      
       expect(response.status).toBe(200);
       expect(response.body).toMatchObject({
         app: 'DevOps App GCP',
-        version: '1.0.0',
-        environment: expect.any(String)
+        version: '1.0.0'
       });
+      expect(response.body).toHaveProperty('environment');
+      expect(response.body).toHaveProperty('timestamp');
+    });
+  });
+
+  describe('GET /metrics', () => {
+    it('should return prometheus metrics', async () => {
+      const response = await request(app).get('/metrics');
+      
+      expect(response.status).toBe(200);
+      expect(response.text).toContain('http_requests_total');
+      expect(response.text).toContain('http_request_duration_seconds');
     });
   });
 
   describe('GET /nonexistent', () => {
     it('should return 404', async () => {
       const response = await request(app).get('/nonexistent');
+      
       expect(response.status).toBe(404);
+      expect(response.body).toMatchObject({
+        error: 'Not Found'
+      });
     });
   });
 });
 ```
-
-Crie também o arquivo `tests/integration.test.js`:
-
-```javascript
-const request = require('supertest');
-const baseURL = process.env.BASE_URL || 'http://localhost:3000';
-
-describe('Integration Tests', () => {
-  describe('Full Application Flow', () => {
-    it('should handle complete user journey', async () => {
-      // Test homepage
-      const homeResponse = await request(baseURL).get('/');
-      expect(homeResponse.status).toBe(200);
-
-      // Test health check
-      const healthResponse = await request(baseURL).get('/health');
-      expect(healthResponse.status).toBe(200);
-      expect(healthResponse.body.status).toBe('healthy');
-
-      // Test API info
-      const infoResponse = await request(baseURL).get('/api/info');
-      expect(infoResponse.status).toBe(200);
-      expect(infoResponse.body.app).toBe('DevOps App GCP');
-    });
-  });
-});
-```
-
-### 4.7 Workflow de Rollback
-
-Crie o arquivo `.github/workflows/rollback.yml`:
-
-```yaml
-name: Emergency Rollback
-
-on:
-  workflow_dispatch:
-    inputs:
-      revision:
-        description: 'Revision number (deixe vazio para anterior)'
-        required: false
-        type: string
-
-jobs:
-  rollback:
-    name: Rollback Production
-    runs-on: ubuntu-latest
-    environment: production
-    
-    steps:
-    - name: Setup Google Cloud CLI
-      uses: google-github-actions/setup-gcloud@v1
-      with:
-        service_account_key: ${{ secrets.GCP_SA_KEY }}
-        project_id: ${{ secrets.GCP_PROJECT_ID }}
-    
-    - name: Get GKE credentials
-      run: |
-        gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER }} \
-          --zone ${{ secrets.GKE_ZONE }}
-    
-    - name: Show current deployment info
-      run: |
-        echo "=== ESTADO ATUAL ==="
-        kubectl get deployment devops-app -n devops-app -o wide
-        kubectl rollout history deployment/devops-app -n devops-app
-    
-    - name: Perform rollback
-      run: |
-        if [ -z "${{ github.event.inputs.revision }}" ]; then
-          echo "Fazendo rollback para versão anterior..."
-          kubectl rollout undo deployment/devops-app -n devops-app
-        else
-          echo "Fazendo rollback para revision ${{ github.event.inputs.revision }}..."
-          kubectl rollout undo deployment/devops-app \
-            --to-revision=${{ github.event.inputs.revision }} \
-            -n devops-app
-        fi
-    
-    - name: Wait for rollback completion
-      run: |
-        kubectl rollout status deployment/devops-app -n devops-app --timeout=300s
-    
-    - name: Verify rollback
-      run: |
-        echo "=== ESTADO APÓS ROLLBACK ==="
-        kubectl get pods -n devops-app -l app=devops-app
-        kubectl get deployment devops-app -n devops-app -o wide
-        
-        EXTERNAL_IP=$(kubectl get service devops-app-service -n devops-app \
-          -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-        
-        if curl -f http://$EXTERNAL_IP/health; then
-          echo "Rollback realizado com sucesso"
-        else
-          echo "Rollback pode ter falhado - verificar manualmente"
-          exit 1
-        fi
-```
-
----
 
 ## Dia 5: Monitoramento com Prometheus e Grafana
 
