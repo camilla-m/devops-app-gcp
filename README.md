@@ -1293,63 +1293,54 @@ Atualize o `server.js` para incluir métricas Prometheus:
 
 ```javascript
 const express = require('express');
-const path = require('path');
-const promClient = require('prom-client');
+const client = require('prom-client');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Configurar coleta de métricas padrão
-promClient.collectDefaultMetrics();
+// Configuração do Prometheus
+const register = new client.Registry();
+client.collectDefaultMetrics({ register });
 
-// Criar métricas customizadas
-const httpRequestDuration = new promClient.Histogram({
+// Middlewares
+app.use(express.json());
+
+// Métricas customizadas
+const httpRequestDuration = new client.Histogram({
   name: 'http_request_duration_seconds',
   help: 'Duration of HTTP requests in seconds',
-  labelNames: ['method', 'route', 'status'],
-  buckets: [0.1, 0.5, 1, 2, 5]
+  labelNames: ['method', 'status_code'],
+  registers: [register]
 });
 
-const httpRequestTotal = new promClient.Counter({
+const httpRequestsTotal = new client.Counter({
   name: 'http_requests_total',
   help: 'Total number of HTTP requests',
-  labelNames: ['method', 'route', 'status']
-});
-
-const activeConnections = new promClient.Gauge({
-  name: 'active_connections',
-  help: 'Number of active connections'
+  labelNames: ['method', 'status_code'],
+  registers: [register]
 });
 
 // Middleware para métricas
 app.use((req, res, next) => {
   const start = Date.now();
-  activeConnections.inc();
-
+  
   res.on('finish', () => {
     const duration = (Date.now() - start) / 1000;
-    const route = req.route?.path || req.path;
+    httpRequestDuration
+      .labels(req.method, res.statusCode)
+      .observe(duration);
     
-    httpRequestDuration.observe(
-      { method: req.method, route, status: res.statusCode },
-      duration
-    );
-    
-    httpRequestTotal.inc({
-      method: req.method,
-      route,
-      status: res.statusCode
-    });
-    
-    activeConnections.dec();
+    httpRequestsTotal
+      .labels(req.method, res.statusCode)
+      .inc();
   });
   
   next();
 });
 
-app.use(express.static('public'));
-
+// Rotas
 app.get('/health', (req, res) => {
-  res.status(200).json({
+  res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
     uptime: process.uptime()
@@ -1358,41 +1349,48 @@ app.get('/health', (req, res) => {
 
 app.get('/api/info', (req, res) => {
   res.json({
-    app: 'DevOps App GCP',
-    version: '1.0.0',
+    app: 'DevOps App GCP Aula 4',
+    version: '2.0.0',
     environment: process.env.NODE_ENV || 'development',
-    pod: process.env.HOSTNAME || 'localhost'
+    timestamp: new Date().toISOString()
   });
 });
 
-// Endpoint de métricas
 app.get('/metrics', async (req, res) => {
-  res.set('Content-Type', promClient.register.contentType);
   try {
-    const metrics = await promClient.register.metrics();
-    res.end(metrics);
+    res.set('Content-Type', register.contentType);
+    res.end(await register.metrics());
   } catch (error) {
-    res.status(500).end(error);
+    res.status(500).end(error.message);
   }
 });
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-const server = app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
-});
-
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('SIGTERM received, shutting down gracefully');
-  server.close(() => {
-    console.log('Process terminated');
+// Middleware 404
+app.use((req, res) => {
+  res.status(404).json({
+    error: 'Not Found',
+    message: 'The requested resource was not found'
   });
 });
 
+// Middleware de erro
+app.use((error, req, res, next) => {
+  console.error('Error:', error);
+  res.status(500).json({
+    error: 'Internal Server Error',
+    message: 'Something went wrong'
+  });
+});
+
+// Exportar app para testes
 module.exports = app;
+
+// Iniciar servidor apenas se executado diretamente
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Servidor rodando na porta ${PORT}`);
+  });
+}
 ```
 
 ### 5.2 Deploy do Stack de Monitoramento
@@ -1410,6 +1408,15 @@ metadata:
 ```
 
 ### 5.3 Configuração do Prometheus
+
+
+Execute:
+
+```
+kubectl create -f monitoring/
+```
+
+Para os arquivos:
 
 ```yaml
 # monitoring/prometheus-config.yaml
@@ -1688,62 +1695,7 @@ data:
 
 ### 5.6 Dashboard Grafana
 
-Crie um dashboard básico em `monitoring/dashboard-devops-app.json`:
-
-```json
-{
-  "dashboard": {
-    "id": null,
-    "title": "DevOps App Metrics",
-    "tags": ["devops"],
-    "timezone": "browser",
-    "panels": [
-      {
-        "id": 1,
-        "title": "Request Rate",
-        "type": "stat",
-        "targets": [
-          {
-            "expr": "rate(http_requests_total[5m])",
-            "legendFormat": "{{method}} {{route}}"
-          }
-        ],
-        "gridPos": {"h": 8, "w": 6, "x": 0, "y": 0}
-      },
-      {
-        "id": 2,
-        "title": "Request Duration",
-        "type": "graph",
-        "targets": [
-          {
-            "expr": "histogram_quantile(0.95, http_request_duration_seconds_bucket)",
-            "legendFormat": "95th percentile"
-          },
-          {
-            "expr": "histogram_quantile(0.50, http_request_duration_seconds_bucket)",
-            "legendFormat": "50th percentile"
-          }
-        ],
-        "gridPos": {"h": 8, "w": 12, "x": 6, "y": 0}
-      },
-      {
-        "id": 3,
-        "title": "Error Rate",
-        "type": "graph",
-        "targets": [
-          {
-            "expr": "rate(http_requests_total{status=~\"5..\"}[5m])",
-            "legendFormat": "5xx errors"
-          }
-        ],
-        "gridPos": {"h": 8, "w": 6, "x": 18, "y": 0}
-      }
-    ],
-    "time": {"from": "now-1h", "to": "now"},
-    "refresh": "5s"
-  }
-}
-```
+Board *19268* de _Prometheus All Metrics_.
 
 ### Deploy do Monitoramento
 
