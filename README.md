@@ -6,20 +6,20 @@
 
 ## 📑 Índice
 
-- [Sobre o Treinamento](#sobre-o-treinamento)
-- [Pré-requisitos](#pré-requisitos)
-- [Estrutura do Projeto](#estrutura-do-projeto)
-- [Quick Start](#quick-start)
+- [Sobre o Treinamento](#-sobre-o-treinamento)
+- [Pré-requisitos](#-pré-requisitos)
+- [Estrutura do Projeto](#-estrutura-do-projeto)
+- [Quick Start](#-quick-start)
 - [Dia 1: Docker e Containerização](#-dia-1-docker-e-containerização)
 - [Dia 2: Terraform e Infrastructure as Code](#-dia-2-terraform-e-infrastructure-as-code)
 - [Dia 3: Kubernetes no GKE](#-dia-3-kubernetes-no-gke)
 - [Dia 4: CI/CD Pipeline](#-dia-4-cicd-pipeline-com-github-actions)
 - [Dia 5: Monitoramento](#-dia-5-monitoramento-com-prometheus-e-grafana)
-- [Dia 6: Service Mesh com Istio](#dia-6-service-mesh-com-istio)
-- [Comandos Úteis](#comandos-úteis)
-- [Troubleshooting](#troubleshooting)
-- [Limpeza de Recursos](#limpeza-de-recursos)
-- [Próximos Passos](#próximos-passos)
+- [Dia 6: Service Mesh com Istio](#-dia-6-service-mesh-com-istio)
+- [Comandos Úteis](#-comandos-úteis)
+- [Troubleshooting](#-troubleshooting)
+- [Limpeza de Recursos](#-limpeza-de-recursos)
+- [Próximos Passos](#-próximos-passos)
 
 ---
 
