@@ -1,78 +1,126 @@
-# Descomplicando a Stack DevOps no Google Cloud Platform
+# 🚀 Descomplicando a Stack DevOps no Google Cloud Platform
 
-> DevOps: A Ponte entre o Código e o Deploy 
+> **DevOps: A Ponte entre o Código e o Deploy**
 
-## Sobre o Treinamento
+---
 
-Este é um treinamento prático e imersivo que ensina como construir e gerenciar uma pipeline completa de DevOps no Google Cloud Platform. Você aprenderá desde a conteinerização até o deploy automatizado em Kubernetes, passando por Infrastructure as Code com Terraform, monitoramento com Prometheus e Grafana e overview de microserviços com Service Mesh e Istio.
+## 📑 Índice
 
-### O que você vai aprender
+- [Sobre o Treinamento](#sobre-o-treinamento)
+- [Pré-requisitos](#pré-requisitos)
+- [Estrutura do Projeto](#estrutura-do-projeto)
+- [Quick Start](#quick-start)
+- [Dia 1: Docker e Containerização](#dia-1-docker-e-containerização)
+- [Dia 2: Terraform e Infrastructure as Code](#dia-2-terraform-e-infrastructure-as-code)
+- [Dia 3: Kubernetes no GKE](#dia-3-kubernetes-no-gke)
+- [Dia 4: CI/CD Pipeline](#dia-4-cicd-pipeline-com-github-actions)
+- [Dia 5: Monitoramento](#dia-5-monitoramento-com-prometheus-e-grafana)
+- [Dia 6: Service Mesh com Istio](#dia-6-service-mesh-com-istio)
+- [Comandos Úteis](#comandos-úteis)
+- [Troubleshooting](#troubleshooting)
+- [Limpeza de Recursos](#limpeza-de-recursos)
+- [Próximos Passos](#próximos-passos)
 
-- Conteinerização com Docker
-- Infrastructure as Code com Terraform  
-- Orquestração com Kubernetes no GKE
-- Monitoramento e observabilidade com Prometheus e Grafana
-- CI/CD com GitHub Actions
-- Microserviços com Service Mesh e Istio
+---
 
-### Para quem é este treinamento
+## 📖 Sobre o Treinamento
+
+Este é um **treinamento prático e imersivo** que ensina como construir e gerenciar uma pipeline completa de DevOps no Google Cloud Platform. Você aprenderá desde a conteinerização até o deploy automatizado em Kubernetes, passando por Infrastructure as Code com Terraform, monitoramento com Prometheus e Grafana, e overview de microserviços com Service Mesh e Istio.
+
+### 🎯 O que você vai aprender
+
+- 🐳 **Conteinerização com Docker**
+- 🏗️ **Infrastructure as Code com Terraform**
+- ☸️ **Orquestração com Kubernetes no GKE**
+- 📊 **Monitoramento e observabilidade com Prometheus e Grafana**
+- 🔄 **CI/CD com GitHub Actions**
+- 🕸️ **Microserviços com Service Mesh e Istio**
+
+### 👥 Para quem é este treinamento
 
 - **Desenvolvedores** que querem entender o ciclo de vida de suas aplicações
 - **Profissionais de Infraestrutura** que desejam modernizar suas práticas
 - **Profissionais de TI** buscando conhecimentos em DevOps
 
-## Pré-requisitos
+---
 
-### Conhecimento
-- Linux e linha de comando (obrigatório)
-- Docker (desejável)
-- Programação básica (desejável)
-- Terraform e Kubernetes (desejável)
+## ⚙️ Pré-requisitos
 
-### Ferramentas Necessárias
+### 📚 Conhecimento
 
-| Ferramenta | Descrição | Link de Download |
-|------------|-----------|------------------|
+- ✅ **Linux e linha de comando** (obrigatório)
+- 📘 **Docker** (desejável)
+- 📘 **Programação básica** (desejável)
+- 📘 **Terraform e Kubernetes** (desejável)
+
+### 🛠️ Ferramentas Necessárias
+
+| Ferramenta | Descrição | Link |
+|------------|-----------|------|
 | **Google Cloud Platform Account** | Conta na plataforma de nuvem do Google | [Criar conta](https://cloud.google.com/) |
 | **Google Cloud CLI (gcloud)** | Interface de linha de comando para GCP | [Download](https://cloud.google.com/sdk/docs/install) |
 | **kubectl** | Cliente de linha de comando para Kubernetes | [Instalação](https://kubernetes.io/docs/tasks/tools/) |
-
-### Containerização e Orquestração
-
-| Ferramenta | Descrição | Link de Download |
-|------------|-----------|------------------|
 | **Docker Desktop** | Plataforma de containerização | [Download](https://www.docker.com/products/docker-desktop) |
 | **Istio CLI (istioctl)** | Interface para service mesh Istio | Instalado via script no tutorial |
-
-### Infrastructure as Code
-
-| Ferramenta | Descrição | Link de Download |
-|------------|-----------|------------------|
 | **Terraform** | Ferramenta de Infrastructure as Code | [Download](https://www.terraform.io/downloads) |
-
-### Desenvolvimento
-
-| Ferramenta | Descrição | Link de Download |
-|------------|-----------|------------------|
 | **Node.js** (versão 18+) | Runtime JavaScript para aplicação exemplo | [Download](https://nodejs.org/) |
 | **Git** | Sistema de controle de versão | [Download](https://git-scm.com/) |
 | **Conta GitHub** | Plataforma para CI/CD pipelines | [Criar conta](https://github.com/) |
 
 ---
 
-## Estrutura do Projeto
+## 📁 Estrutura do Projeto
 
-//TODO
+```
+devops-app-gcp/
+├── .github/
+│   └── workflows/
+│       ├── ci.yml              # Pipeline de CI
+│       └── cd.yml              # Pipeline de CD
+├── k8s/
+│   ├── namespace.yaml
+│   ├── deployment.yaml
+│   ├── service.yaml
+│   └── ingress.yaml
+├── monitoring/
+│   ├── namespace.yaml
+│   ├── prometheus-config.yaml
+│   ├── prometheus.yaml
+│   └── grafana.yaml
+├── terraform/
+│   ├── main.tf
+│   ├── variables.tf
+│   ├── outputs.tf
+│   ├── kubernetes.tf
+│   └── startup-script.sh
+├── istio/
+│   ├── gateway.yaml
+│   ├── virtual-service.yaml
+│   ├── destination-rule.yaml
+│   └── peer-authentication.yaml
+├── public/
+│   └── index.html
+├── tests/
+│   └── app.test.js
+├── Dockerfile
+├── package.json
+├── server.js
+└── README.md
+```
 
-## Quick Start
+---
 
-### 1. Clone o repositório
+## ⚡ Quick Start
+
+### 1️⃣ Clone o repositório
+
 ```bash
-git clone https://github.com/seu-usuario/devops-app-gcp.git
+git clone https://github.com/camilla-m/devops-app-gcp.git
 cd devops-app-gcp
 ```
 
-### 2. Configure o ambiente
+### 2️⃣ Configure o ambiente
+
 ```bash
 # Instalar dependências
 npm install
@@ -89,7 +137,8 @@ gcloud services enable container.googleapis.com
 gcloud services enable cloudbuild.googleapis.com
 ```
 
-### 3. Build da aplicação
+### 3️⃣ Build da aplicação
+
 ```bash
 # Build da imagem Docker
 docker build -t devops-app-gcp:v1.0 .
@@ -98,18 +147,27 @@ docker build -t devops-app-gcp:v1.0 .
 docker run -p 3000:3000 devops-app-gcp:v1.0
 ```
 
-### 4. Deploy da infraestrutura
+### 4️⃣ Deploy da infraestrutura
+
 ```bash
 cd terraform
 terraform init
 terraform apply
 ```
 
-## Dia 1: Docker e Containerização
+---
 
-### Aplicação Base
+## 📦 Dia 1: Docker e Containerização
 
-**package.json:**
+### 🎯 Objetivos
+- Entender containerização
+- Criar Dockerfile otimizado
+- Executar aplicação em container
+
+### 📄 Aplicação Base
+
+#### `package.json`
+
 ```json
 {
   "name": "devops-app-gcp",
@@ -125,7 +183,8 @@ terraform apply
 }
 ```
 
-**server.js:**
+#### `server.js`
+
 ```javascript
 const express = require('express');
 const path = require('path');
@@ -160,7 +219,8 @@ app.listen(PORT, () => {
 });
 ```
 
-**public/index.html:**
+#### `public/index.html`
+
 ```html
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -226,7 +286,7 @@ app.listen(PORT, () => {
 </html>
 ```
 
-### Dockerfile Otimizado
+### 🐳 Dockerfile Otimizado
 
 ```dockerfile
 # Usar imagem oficial Node.js LTS
@@ -267,7 +327,7 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 CMD ["node", "server.js"]
 ```
 
-### Comandos Docker
+### 💻 Comandos Docker
 
 ```bash
 # Build e execução
@@ -283,11 +343,19 @@ docker exec -it app sh
 docker stop app && docker rm app
 ```
 
-## Dia 2: Terraform e Infrastructure as Code
+---
 
-### Arquivos Terraform
+## 🏗️ Dia 2: Terraform e Infrastructure as Code
 
-**terraform/variables.tf:**
+### 🎯 Objetivos
+- Provisionar infraestrutura com código
+- Criar VPC, subnets e firewall rules
+- Deploy de VMs e cluster GKE
+
+### 📄 Arquivos Terraform
+
+#### `terraform/variables.tf`
+
 ```hcl
 variable "project_id" {
   description = "ID do projeto GCP"
@@ -313,7 +381,8 @@ variable "machine_type" {
 }
 ```
 
-**terraform/main.tf:**
+#### `terraform/main.tf`
+
 ```hcl
 terraform {
   required_version = ">= 1.0"
@@ -392,7 +461,8 @@ resource "google_compute_instance" "app_server" {
 }
 ```
 
-**terraform/outputs.tf:**
+#### `terraform/outputs.tf`
+
 ```hcl
 output "instance_ip" {
   description = "IP público da instância"
@@ -415,104 +485,15 @@ output "cluster_location" {
 }
 ```
 
-**terraform/startup-script.sh:**
-```bash
-#!/bin/bash
+#### `terraform/terraform.tfvars`
 
-# Atualizar sistema
-sudo apt-get update
-
-# Aguardar Docker inicializar
-sleep 10
-
-# Criar aplicação temporária para demonstração
-mkdir -p /tmp/app/public
-
-# Criar Dockerfile
-cat > /tmp/app/Dockerfile << 'EOF'
-FROM node:18-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm install --only=production && npm cache clean --force
-COPY . .
-RUN addgroup -g 1001 -S nodejs && adduser -S nextjs -u 1001
-RUN chown -R nextjs:nodejs /app
-USER nextjs
-EXPOSE 3000
-ENV NODE_ENV=production PORT=3000
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
-CMD ["node", "server.js"]
-EOF
-
-cat > /tmp/app/package.json << 'EOF'
-{
-  "name": "devops-app-gcp",
-  "version": "1.0.0",
-  "main": "server.js",
-  "scripts": { "start": "node server.js" },
-  "dependencies": { "express": "^4.18.2" }
-}
-EOF
-
-cat > /tmp/app/server.js << 'EOF'
-const express = require('express');
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-app.use(express.static('public'));
-
-app.get('/health', (req, res) => {
-  res.json({ status: 'healthy', timestamp: new Date().toISOString() });
-});
-
-app.get('/api/info', (req, res) => {
-  res.json({
-    app: 'DevOps App GCP',
-    version: '1.0.0',
-    environment: process.env.NODE_ENV || 'development',
-    instance: process.env.HOSTNAME || 'localhost'
-  });
-});
-
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
-});
-EOF
-
-cat > /tmp/app/public/index.html << 'EOF'
-<!DOCTYPE html>
-<html><head><title>DevOps App - GCP</title></head>
-<body>
-<h1>DevOps App rodando no GCP!</h1>
-<p>Aplicação containerizada em VM do Google Compute Engine</p>
-<a href="/health">Health Check</a> | <a href="/api/info">Info API</a>
-</body></html>
-EOF
-
-# Build da imagem
-cd /tmp/app
-sudo docker build -t devops-app-gcp:v1.0 .
-
-# Executar container
-sudo docker run -d \
-  --name devops-app \
-  --restart unless-stopped \
-  -p 80:3000 \
-  -p 3000:3000 \
-  devops-app-gcp:v1.0
-
-echo "Aplicação iniciada em $(date)" | sudo tee -a /var/log/app-startup.log
-```
-
-**terraform/terraform.tfvars:**
 ```hcl
 project_id = "SEU_PROJECT_ID_AQUI"
 region     = "us-central1"
 zone       = "us-central1-a"
 ```
 
-### Comandos Terraform
+### 💻 Comandos Terraform
 
 ```bash
 # Navegar para diretório terraform
@@ -532,11 +513,19 @@ APP_IP=$(terraform output -raw instance_ip)
 curl http://$APP_IP/health
 ```
 
-## Dia 3: Kubernetes no GKE
+---
 
-### Cluster GKE no Terraform
+## ☸️ Dia 3: Kubernetes no GKE
 
-**terraform/kubernetes.tf:**
+### 🎯 Objetivos
+- Criar cluster GKE com Terraform
+- Deploy de aplicação no Kubernetes
+- Configurar LoadBalancer e Ingress
+
+### 📄 Cluster GKE no Terraform
+
+#### `terraform/kubernetes.tf`
+
 ```hcl
 # Cluster GKE
 resource "google_container_cluster" "devops_cluster" {
@@ -593,9 +582,10 @@ resource "google_container_node_pool" "devops_nodes" {
 }
 ```
 
-### Kubernetes Manifests
+### 📄 Kubernetes Manifests
 
-**k8s/namespace.yaml:**
+#### `k8s/namespace.yaml`
+
 ```yaml
 apiVersion: v1
 kind: Namespace
@@ -605,7 +595,8 @@ metadata:
     name: devops-app
 ```
 
-**k8s/deployment.yaml:**
+#### `k8s/deployment.yaml`
+
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -655,7 +646,8 @@ spec:
           periodSeconds: 5
 ```
 
-**k8s/service.yaml:**
+#### `k8s/service.yaml`
+
 ```yaml
 apiVersion: v1
 kind: Service
@@ -675,7 +667,8 @@ spec:
     app: devops-app
 ```
 
-**k8s/ingress.yaml:**
+#### `k8s/ingress.yaml`
+
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -697,7 +690,7 @@ spec:
               number: 80
 ```
 
-### Deploy no GKE
+### 💻 Deploy no GKE
 
 ```bash
 # Aplicar mudanças no Terraform
@@ -730,215 +723,16 @@ EXTERNAL_IP=$(kubectl get service devops-app-service -n devops-app -o jsonpath='
 curl http://$EXTERNAL_IP/health
 ```
 
-## Comandos Úteis - recapitulando as últimas três aulas
+---
 
-Recapitulando as últimas aulas e passando dicas de comandos :) 
+## 🔄 Dia 4: CI/CD Pipeline com GitHub Actions
 
-### Docker
-```bash
-# Build e tag
-docker build -t devops-app-gcp:v1.0 .
-docker tag devops-app-gcp:v1.0 gcr.io/$PROJECT_ID/devops-app-gcp:v1.0
+### 🎯 Objetivos
+- Configurar GitHub Actions
+- Automatizar testes e build
+- Deploy automático no GKE
 
-# Push para Container Registry
-docker push gcr.io/$PROJECT_ID/devops-app-gcp:v1.0
-
-# Executar localmente
-docker run -p 3000:3000 devops-app-gcp:v1.0
-
-# Debugging
-docker exec -it  sh
-docker logs 
-
-# Limpeza local
-docker stop 
-docker rm 
-docker rmi devops-app-gcp:v1.0
-```
-
-### Terraform
-```bash
-# Workflow básico
-terraform init
-terraform plan
-terraform apply
-terraform destroy
-
-# Verificar estado
-terraform show
-terraform state list
-
-# Outputs
-terraform output
-terraform output -raw instance_ip
-
-# Formatação e validação
-terraform fmt
-terraform validate
-```
-
-### Kubernetes
-```bash
-# Contexts e clusters
-kubectl config get-contexts
-kubectl config use-context 
-
-# Recursos
-kubectl get all -n devops-app
-kubectl describe deployment devops-app -n devops-app
-
-# Logs
-kubectl logs -f deployment/devops-app -n devops-app
-kubectl logs  -n devops-app --previous
-
-# Port forwarding
-kubectl port-forward service/devops-app-service 8080:80 -n devops-app
-
-# Scaling
-kubectl scale deployment devops-app --replicas=5 -n devops-app
-
-# Rollout
-kubectl rollout status deployment/devops-app -n devops-app
-kubectl rollout history deployment/devops-app -n devops-app
-kubectl rollout undo deployment/devops-app -n devops-app
-```
-
-### GCP
-```bash
-# Projetos
-gcloud projects list
-gcloud config set project 
-
-# Compute Engine
-gcloud compute instances list
-gcloud compute ssh 
-
-# GKE
-gcloud container clusters list
-gcloud container clusters get-credentials  --region=
-
-# Container Registry
-gcloud container images list
-gcloud container images delete 
-```
-
-## Monitoramento e Troubleshooting
-
-### Health Checks
-```bash
-# Verificar aplicação local
-curl http://localhost:3000/health
-curl http://localhost:3000/api/info
-
-# Verificar no GCP
-curl http:///health
-curl http:///api/info
-
-# Kubernetes health
-kubectl get pods -n devops-app
-kubectl top pods -n devops-app
-```
-
-### Logs
-```bash
-# Docker logs
-docker logs  --follow
-
-# GCE logs
-gcloud compute ssh  --command "sudo journalctl -u docker -f"
-
-# Kubernetes logs
-kubectl logs -f deployment/devops-app -n devops-app
-kubectl logs  -n devops-app --previous
-```
-
-### Debugging
-```bash
-# Conectar ao container
-docker exec -it  sh
-
-# Conectar ao pod
-kubectl exec -it  -n devops-app -- sh
-
-# Verificar recursos
-kubectl describe pod  -n devops-app
-kubectl get events -n devops-app --sort-by='.lastTimestamp'
-```
-
-## Issues Comuns
-
-### Docker build falha
-```bash
-# Verificar Dockerfile
-cat Dockerfile
-
-# Build com logs detalhados
-docker build --no-cache -t devops-app-gcp:v1.0 .
-
-# Verificar espaço em disco
-docker system df
-docker system prune
-```
-
-### Terraform apply falha
-```bash
-# Verificar credenciais
-gcloud auth list
-gcloud config list
-
-# Verificar APIs habilitadas
-gcloud services list --enabled
-
-# Verificar quotas
-gcloud compute project-info describe --project=$PROJECT_ID
-```
-
-### Pods em estado Pending
-```bash
-# Verificar events
-kubectl get events -n devops-app --sort-by='.lastTimestamp'
-
-# Verificar recursos dos nodes
-kubectl top nodes
-kubectl describe nodes
-```
-
-## Limpeza de Recursos
-
-### Importante: Evitar Custos Desnecessários
-
-```bash
-# 1. Deletar recursos Kubernetes
-kubectl delete namespace devops-app
-
-# 2. Destruir infraestrutura Terraform
-cd terraform
-terraform destroy -auto-approve
-
-# 3. Deletar imagens do Container Registry
-gcloud container images delete gcr.io/$PROJECT_ID/devops-app-gcp:v1.0 --force-delete-tags
-
-# 4. Verificar recursos restantes
-gcloud compute instances list
-gcloud container clusters list
-gcloud compute networks list
-
-# 5. Deletar projeto (opcional - remove tudo)
-gcloud projects delete $PROJECT_ID
-```
-
-## Dia 4: CI/CD Pipeline com GitHub Actions
-
-### Pré-requisitos
-
-- Cluster GKE configurado
-- Aplicação Node.js deployada
-- Conta GitHub
-- Projeto GCP ativo
-
-### 4.1 Configuração do Service Account
-
-Criar um service account específico para o GitHub Actions:
+### 🔐 Configuração do Service Account
 
 ```bash
 # 1. Criar service account
@@ -962,16 +756,11 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
 # 3. Gerar chave JSON
 gcloud iam service-accounts keys create github-actions-key.json \
   --iam-account=github-actions@$PROJECT_ID.iam.gserviceaccount.com
-
-#4. Rodar npm lint
-npm init @eslint/config
 ```
-### 4.2 Configuração de Secrets no GitHub
 
-No repositório GitHub, configure os seguintes secrets:
+### 🔑 Configuração de Secrets no GitHub
 
-1. Acesse `Settings > Secrets and variables > Actions`
-2. Adicione os secrets:
+No repositório GitHub, configure os seguintes secrets em `Settings > Secrets and variables > Actions`:
 
 | Secret Name | Valor |
 |-------------|-------|
@@ -980,56 +769,9 @@ No repositório GitHub, configure os seguintes secrets:
 | `GKE_CLUSTER` | Nome do cluster GKE |
 | `GKE_ZONE` | Zona do cluster |
 
-### 4.3 Atualização da Aplicação com Testes
+### 📄 Pipeline de CI
 
-Primeiro, atualize o `package.json` para incluir dependências de teste:
-
-```json
-{
-  "name": "devops-app-gcp",
-  "version": "1.0.0",
-  "description": "Aplicação de exemplo para treinamento DevOps no GCP",
-  "main": "server.js",
-  "scripts": {
-    "start": "node server.js",
-    "test": "jest --coverage --detectOpenHandles",
-    "test:unit": "jest --coverage --testPathIgnorePatterns=integration --detectOpenHandles",
-    "test:integration": "jest --testPathPattern=integration",
-    "test:watch": "jest --watch",
-    "lint": "eslint . --fix",
-    "lint:check": "eslint ."
-  },
-  "dependencies": {
-    "express": "^4.18.2",
-    "prom-client": "^15.0.0"
-  },
-  "devDependencies": {
-    "jest": "^29.7.0",
-    "supertest": "^6.3.3",
-    "eslint": "^8.52.0",
-    "@eslint/js": "^8.52.0"
-  },
-  "jest": {
-    "testEnvironment": "node",
-    "coverageDirectory": "coverage",
-    "collectCoverageFrom": [
-      "server.js",
-      "!node_modules/**",
-      "!coverage/**"
-    ],
-    "coverageReporters": [
-      "text",
-      "lcov",
-      "html"
-    ],
-    "testTimeout": 10000
-  }
-}
-```
-
-### 4.4 Pipeline de CI (Continuous Integration)
-
-Crie o arquivo `.github/workflows/ci.yml`:
+#### `.github/workflows/ci.yml`
 
 ```yaml
 name: Continuous Integration
@@ -1044,7 +786,6 @@ env:
   NODE_VERSION: '18'
 
 jobs:
-  # Job 1: Testes e qualidade de código
   test:
     name: Test Application
     runs-on: ubuntu-latest
@@ -1074,7 +815,6 @@ jobs:
       uses: codecov/codecov-action@v3
       if: success()
 
-  # Job 2: Scanning de segurança
   security:
     name: Security Scan
     runs-on: ubuntu-latest
@@ -1092,7 +832,6 @@ jobs:
         path: ./
         base: main
 
-  # Job 3: Build e teste do Docker
   docker:
     name: Build and Test Docker Image
     runs-on: ubuntu-latest
@@ -1124,9 +863,9 @@ jobs:
         docker rm test-app
 ```
 
-### 4.5 Pipeline de CD (Continuous Deployment)
+### 📄 Pipeline de CD
 
-Crie o arquivo `.github/workflows/cd.yml`:
+#### `.github/workflows/cd.yml`
 
 ```yaml
 name: Deploy to GKE
@@ -1226,68 +965,16 @@ jobs:
         echo "Deploy realizado com sucesso!"
 ```
 
-### 4.6 Testes Automatizados
+---
 
-Crie o arquivo `tests/app.test.js`:
+## 📊 Dia 5: Monitoramento com Prometheus e Grafana
 
-```javascript
-const request = require('supertest');
-const app = require('../server');
+### 🎯 Objetivos
+- Instrumentar aplicação com métricas
+- Deploy do Prometheus
+- Criar dashboards no Grafana
 
-describe('DevOps App', () => {
-  describe('GET /health', () => {
-    it('should return healthy status', async () => {
-      const response = await request(app).get('/health');
-      
-      expect(response.status).toBe(200);
-      expect(response.body).toMatchObject({
-        status: 'healthy'
-      });
-      expect(response.body).toHaveProperty('timestamp');
-      expect(response.body).toHaveProperty('uptime');
-    });
-  });
-
-  describe('GET /api/info', () => {
-    it('should return application info', async () => {
-      const response = await request(app).get('/api/info');
-      
-      expect(response.status).toBe(200);
-      expect(response.body).toMatchObject({
-        app: 'DevOps App GCP',
-        version: '1.0.0'
-      });
-      expect(response.body).toHaveProperty('environment');
-      expect(response.body).toHaveProperty('timestamp');
-    });
-  });
-
-  describe('GET /metrics', () => {
-    it('should return prometheus metrics', async () => {
-      const response = await request(app).get('/metrics');
-      
-      expect(response.status).toBe(200);
-      expect(response.text).toContain('http_requests_total');
-      expect(response.text).toContain('http_request_duration_seconds');
-    });
-  });
-
-  describe('GET /nonexistent', () => {
-    it('should return 404', async () => {
-      const response = await request(app).get('/nonexistent');
-      
-      expect(response.status).toBe(404);
-      expect(response.body).toMatchObject({
-        error: 'Not Found'
-      });
-    });
-  });
-});
-```
-
-## Dia 5: Monitoramento com Prometheus e Grafana
-
-### 5.1 Instrumentação da Aplicação
+### 📄 Instrumentação da Aplicação
 
 Atualize o `server.js` para incluir métricas Prometheus:
 
@@ -1395,12 +1082,11 @@ process.on('SIGTERM', () => {
 module.exports = app;
 ```
 
-### 5.2 Deploy do Stack de Monitoramento
+### 📄 Configuração do Prometheus
 
-Crie o namespace de monitoramento:
+#### `monitoring/namespace.yaml`
 
 ```yaml
-# monitoring/namespace.yaml
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -1409,10 +1095,9 @@ metadata:
     name: monitoring
 ```
 
-### 5.3 Configuração do Prometheus
+#### `monitoring/prometheus-config.yaml`
 
 ```yaml
-# monitoring/prometheus-config.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -1485,10 +1170,9 @@ data:
               description: "Pod {{ $labels.instance }} is down"
 ```
 
-### 5.4 Deploy do Prometheus
+#### `monitoring/prometheus.yaml`
 
 ```yaml
-# monitoring/prometheus.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -1597,10 +1281,9 @@ subjects:
   namespace: monitoring
 ```
 
-### 5.5 Configuração do Grafana
+#### `monitoring/grafana.yaml`
 
 ```yaml
-# monitoring/grafana.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -1686,66 +1369,7 @@ data:
           path: /var/lib/grafana/dashboards
 ```
 
-### 5.6 Dashboard Grafana
-
-Crie um dashboard básico em `monitoring/dashboard-devops-app.json`:
-
-```json
-{
-  "dashboard": {
-    "id": null,
-    "title": "DevOps App Metrics",
-    "tags": ["devops"],
-    "timezone": "browser",
-    "panels": [
-      {
-        "id": 1,
-        "title": "Request Rate",
-        "type": "stat",
-        "targets": [
-          {
-            "expr": "rate(http_requests_total[5m])",
-            "legendFormat": "{{method}} {{route}}"
-          }
-        ],
-        "gridPos": {"h": 8, "w": 6, "x": 0, "y": 0}
-      },
-      {
-        "id": 2,
-        "title": "Request Duration",
-        "type": "graph",
-        "targets": [
-          {
-            "expr": "histogram_quantile(0.95, http_request_duration_seconds_bucket)",
-            "legendFormat": "95th percentile"
-          },
-          {
-            "expr": "histogram_quantile(0.50, http_request_duration_seconds_bucket)",
-            "legendFormat": "50th percentile"
-          }
-        ],
-        "gridPos": {"h": 8, "w": 12, "x": 6, "y": 0}
-      },
-      {
-        "id": 3,
-        "title": "Error Rate",
-        "type": "graph",
-        "targets": [
-          {
-            "expr": "rate(http_requests_total{status=~\"5..\"}[5m])",
-            "legendFormat": "5xx errors"
-          }
-        ],
-        "gridPos": {"h": 8, "w": 6, "x": 18, "y": 0}
-      }
-    ],
-    "time": {"from": "now-1h", "to": "now"},
-    "refresh": "5s"
-  }
-}
-```
-
-### Deploy do Monitoramento
+### 💻 Deploy do Monitoramento
 
 ```bash
 # Deploy do monitoring stack
@@ -1768,11 +1392,15 @@ echo "Prometheus: http://$PROMETHEUS_IP:9090"
 
 ---
 
-## Dia 6: Service Mesh com Istio
+## 🕸️ Dia 6: Service Mesh com Istio
 
-### 6.1 Instalação do Istio
+### 🎯 Objetivos
+- Instalar Istio no cluster
+- Configurar traffic management
+- Implementar mTLS entre serviços
+- Observabilidade com Kiali e Jaeger
 
-#### Preparar o Ambiente
+### 📦 Instalação do Istio
 
 ```bash
 # Habilitar APIs necessárias
@@ -1780,15 +1408,6 @@ gcloud services enable container.googleapis.com
 gcloud services enable gkehub.googleapis.com
 gcloud services enable mesh.googleapis.com
 
-# Atualizar cluster para suportar Istio
-gcloud container clusters update devops-cluster \
-  --zone=us-central1-a \
-  --enable-network-policy
-```
-
-#### Instalar Istio CLI
-
-```bash
 # Download e instalação do Istio
 curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.19.3 sh -
 cd istio-1.19.3
@@ -1796,11 +1415,7 @@ export PATH=$PWD/bin:$PATH
 
 # Verificar instalação
 istioctl version --remote=false
-```
 
-#### Instalar Istio no Cluster
-
-```bash
 # Instalar com perfil demo
 istioctl install --set values.defaultRevision=default
 
@@ -1808,7 +1423,7 @@ istioctl install --set values.defaultRevision=default
 kubectl get pods -n istio-system
 ```
 
-### 6.2 Configuração de Sidecar Proxy Automático
+### 🔄 Configuração de Sidecar Proxy Automático
 
 ```bash
 # Habilitar sidecar injection no namespace
@@ -1825,99 +1440,11 @@ kubectl get pods -n devops-app
 kubectl describe pod <pod-name> -n devops-app
 ```
 
-#### Service Entry para Comunicação Externa
+### 📄 Traffic Management
+
+#### `istio/destination-rule.yaml`
 
 ```yaml
-# istio/service-entry.yaml
-apiVersion: networking.istio.io/v1beta1
-kind: ServiceEntry
-metadata:
-  name: external-api
-  namespace: devops-app
-spec:
-  hosts:
-  - httpbin.org
-  ports:
-  - number: 80
-    name: http
-    protocol: HTTP
-  - number: 443
-    name: https
-    protocol: HTTPS
-  location: MESH_EXTERNAL
-  resolution: DNS
-```
-
-### 6.3 Traffic Management
-
-#### Criar Múltiplas Versões da Aplicação
-
-```yaml
-# k8s/deployment-v2.yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: devops-app-v2
-  namespace: devops-app
-  labels:
-    app: devops-app
-    version: v2
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: devops-app
-      version: v2
-  template:
-    metadata:
-      labels:
-        app: devops-app
-        version: v2
-    spec:
-      containers:
-      - name: devops-app
-        image: gcr.io/PROJECT_ID/devops-app-gcp:v2.0
-        ports:
-        - containerPort: 3000
-        env:
-        - name: NODE_ENV
-          value: "production"
-        - name: VERSION
-          value: "v2"
-        resources:
-          requests:
-            memory: "128Mi"
-            cpu: "100m"
-          limits:
-            memory: "256Mi"
-            cpu: "200m"
-```
-
-#### Atualizar Service para Múltiplas Versões
-
-```yaml
-# k8s/service.yaml (atualizado)
-apiVersion: v1
-kind: Service
-metadata:
-  name: devops-app-service
-  namespace: devops-app
-  labels:
-    app: devops-app
-spec:
-  ports:
-  - port: 80
-    targetPort: 3000
-    protocol: TCP
-    name: http
-  selector:
-    app: devops-app # Remove version selector
-```
-
-#### Configurar DestinationRule
-
-```yaml
-# istio/destination-rule.yaml
 apiVersion: networking.istio.io/v1beta1
 kind: DestinationRule
 metadata:
@@ -1951,10 +1478,9 @@ spec:
       baseEjectionTime: 30s
 ```
 
-#### Configurar VirtualService para Traffic Splitting
+#### `istio/virtual-service.yaml`
 
 ```yaml
-# istio/virtual-service.yaml
 apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
@@ -1994,10 +1520,9 @@ spec:
       perTryTimeout: 3s
 ```
 
-#### Gateway para Tráfego Externo
+#### `istio/gateway.yaml`
 
 ```yaml
-# istio/gateway.yaml
 apiVersion: networking.istio.io/v1beta1
 kind: Gateway
 metadata:
@@ -2032,73 +1557,11 @@ spec:
           number: 80
 ```
 
-### 6.4 Observabilidade Nativa (Kiali, Jaeger)
+### 🔒 mTLS e Segurança
 
-#### Instalar Addons de Observabilidade
-
-```bash
-# Instalar Kiali, Jaeger, Prometheus, Grafana
-kubectl apply -f samples/addons/
-
-# Verificar instalação
-kubectl get pods -n istio-system
-
-# Port forward para acessar UIs
-kubectl port-forward -n istio-system svc/kiali 20001:20001 &
-kubectl port-forward -n istio-system svc/jaeger 16686:16686 &
-kubectl port-forward -n istio-system svc/grafana 3000:3000 &
-```
-
-#### Configurar Telemetria
+#### `istio/peer-authentication.yaml`
 
 ```yaml
-# istio/telemetry.yaml
-apiVersion: telemetry.istio.io/v1alpha1
-kind: Telemetry
-metadata:
-  name: metrics
-  namespace: devops-app
-spec:
-  metrics:
-  - providers:
-    - name: prometheus
-  - overrides:
-    - match:
-        metric: ALL_METRICS
-      tagOverrides:
-        request_id:
-          value: "%{REQUEST_ID}"
-```
-
-#### Gerar Tráfego para Observabilidade
-
-```bash
-# Script para gerar tráfego
-GATEWAY_IP=$(kubectl get svc istio-ingressgateway -n istio-system -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-
-for i in {1..100}; do
-  curl -H "Host: devops-app.local" http://$GATEWAY_IP/health
-  curl -H "Host: devops-app.local" -H "canary: true" http://$GATEWAY_IP/api/info
-  sleep 1
-done
-```
-
-### 6.5 mTLS Automático entre Serviços
-
-#### Verificar mTLS Status
-
-```bash
-# Verificar configuração mTLS
-istioctl authn tls-check devops-app-service.devops-app.svc.cluster.local
-
-# Ver certificados
-istioctl proxy-config secret <pod-name> -n devops-app
-```
-
-#### Configurar PeerAuthentication
-
-```yaml
-# istio/peer-authentication.yaml
 apiVersion: security.istio.io/v1beta1
 kind: PeerAuthentication
 metadata:
@@ -2109,10 +1572,9 @@ spec:
     mode: STRICT
 ```
 
-#### Configurar AuthorizationPolicy
+#### `istio/authorization-policy.yaml`
 
 ```yaml
-# istio/authorization-policy.yaml
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
@@ -2139,9 +1601,31 @@ spec:
         paths: ["/health", "/metrics"]
 ```
 
-### 6.6 Testes e Validação
+### 📊 Observabilidade com Kiali e Jaeger
 
-#### Testar Traffic Splitting
+```bash
+# Instalar addons de observabilidade
+kubectl apply -f samples/addons/
+
+# Verificar instalação
+kubectl get pods -n istio-system
+
+# Port forward para acessar UIs
+kubectl port-forward -n istio-system svc/kiali 20001:20001 &
+kubectl port-forward -n istio-system svc/jaeger 16686:16686 &
+kubectl port-forward -n istio-system svc/grafana 3000:3000 &
+
+# Gerar tráfego para visualização
+GATEWAY_IP=$(kubectl get svc istio-ingressgateway -n istio-system -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+
+for i in {1..100}; do
+  curl -H "Host: devops-app.local" http://$GATEWAY_IP/health
+  curl -H "Host: devops-app.local" -H "canary: true" http://$GATEWAY_IP/api/info
+  sleep 1
+done
+```
+
+### 💻 Testes e Validação
 
 ```bash
 # Obter IP do Gateway
@@ -2156,239 +1640,9 @@ done
 for i in {1..5}; do
   curl -s -H "canary: true" http://$GATEWAY_IP/api/info | jq .version
 done
-```
 
-#### Testar Circuit Breaker
-
-```bash
-# Gerar carga para ativar circuit breaker
-kubectl run -i --rm --restart=Never fortio --image=fortio/fortio \
-  -- load -c 3 -qps 0 -n 20 -loglevel Warning \
-  http://devops-app-service.devops-app/health
-
-# Verificar métricas
-istioctl proxy-config cluster <pod-name> -n devops-app --fqdn devops-app-service.devops-app.svc.cluster.local
-```
-
-#### Visualizar no Kiali
-
-```bash
-# Acessar Kiali
-kubectl port-forward -n istio-system svc/kiali 20001:20001
-
-# Acessar: http://localhost:20001
-# Navegar para Graph > devops-app namespace
-# Verificar topology e metrics
-```
-
----
-
-## Scripts de Deploy Completo
-
-### Script de Deploy do Istio
-
-Crie o arquivo `scripts/deploy-istio.sh`:
-
-```bash
-#!/bin/bash
-set -e
-
-# Cores para output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m'
-
-echo -e "${GREEN}=== Deploying Istio Service Mesh ===${NC}"
-
-# 1. Verificar se Istio está instalado
-if ! command -v istioctl &> /dev/null; then
-  echo -e "${RED}Istio CLI não encontrado. Instalando...${NC}"
-  curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.19.3 sh -
-  cd istio-1.19.3
-  export PATH=$PWD/bin:$PATH
-fi
-
-# 2. Instalar Istio
-echo -e "${YELLOW}Instalando Istio...${NC}"
-istioctl install --set values.defaultRevision=default -y
-
-# 3. Habilitar sidecar injection
-echo -e "${YELLOW}Habilitando sidecar injection...${NC}"
-kubectl label namespace devops-app istio-injection=enabled --overwrite
-
-# 4. Aplicar configurações Istio
-echo -e "${YELLOW}Aplicando configurações Istio...${NC}"
-kubectl apply -f istio/
-
-# 5. Instalar addons de observabilidade
-echo -e "${YELLOW}Instalando addons de observabilidade...${NC}"
-kubectl apply -f samples/addons/
-
-# 6. Aguardar pods ficarem prontos
-echo -e "${YELLOW}Aguardando pods ficarem prontos...${NC}"
-kubectl wait --for=condition=ready pod -l app=istiod -n istio-system --timeout=300s
-kubectl wait --for=condition=ready pod -l app=kiali -n istio-system --timeout=300s
-
-# 7. Redeploy da aplicação para injetar sidecars
-echo -e "${YELLOW}Redeployando aplicação com sidecars...${NC}"
-kubectl rollout restart deployment/devops-app -n devops-app
-kubectl rollout status deployment/devops-app -n devops-app
-
-# 8. Obter IPs de acesso
-GATEWAY_IP=$(kubectl get svc istio-ingressgateway -n istio-system -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-
-echo -e "${GREEN}=== Deployment Concluído ===${NC}"
-echo -e "Gateway IP: ${GATEWAY_IP}"
-echo -e "Kiali: kubectl port-forward -n istio-system svc/kiali 20001:20001"
-echo -e "Jaeger: kubectl port-forward -n istio-system svc/jaeger 16686:16686"
-echo -e "Grafana: kubectl port-forward -n istio-system svc/grafana 3000:3000"
-
-# 9. Teste básico
-echo -e "${YELLOW}Executando teste básico...${NC}"
-if curl -f -s http://$GATEWAY_IP/health > /dev/null; then
-  echo -e "${GREEN}✓ Aplicação acessível através do Gateway${NC}"
-else
-  echo -e "${RED}✗ Falha ao acessar aplicação${NC}"
-fi
-```
-
-### Script de Deploy Completo
-
-Crie o arquivo `scripts/deploy-all.sh`:
-
-```bash
-#!/bin/bash
-set -e
-
-# Cores para output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m'
-
-echo -e "${GREEN}=== Deploy Completo DevOps Stack ===${NC}"
-
-# 1. Deploy do monitoramento
-echo -e "${YELLOW}Deployando stack de monitoramento...${NC}"
-kubectl apply -f monitoring/
-kubectl wait --for=condition=ready pod -l app=prometheus -n monitoring --timeout=300s
-kubectl wait --for=condition=ready pod -l app=grafana -n monitoring --timeout=300s
-
-# 2. Deploy do Istio
-echo -e "${YELLOW}Deployando Istio Service Mesh...${NC}"
-./scripts/deploy-istio.sh
-
-# 3. Verificar todos os serviços
-echo -e "${YELLOW}Verificando serviços...${NC}"
-kubectl get pods -n devops-app
-kubectl get pods -n monitoring
-kubectl get pods -n istio-system
-
-# 4. Obter URLs de acesso
-echo -e "${GREEN}=== URLs de Acesso ===${NC}"
-
-GRAFANA_IP=$(kubectl get service grafana -n monitoring -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-echo -e "Grafana: http://${GRAFANA_IP}:3000 (admin/admin)"
-
-PROMETHEUS_IP=$(kubectl get service prometheus -n monitoring -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-echo -e "Prometheus: http://${PROMETHEUS_IP}:9090"
-
-GATEWAY_IP=$(kubectl get svc istio-ingressgateway -n istio-system -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-echo -e "Aplicação: http://${GATEWAY_IP}"
-
-echo -e "Kiali: kubectl port-forward -n istio-system svc/kiali 20001:20001"
-echo -e "Jaeger: kubectl port-forward -n istio-system svc/jaeger 16686:16686"
-
-echo -e "${GREEN}Deploy completo finalizado!${NC}"
-```
-
----
-
-## Troubleshooting
-
-### Problemas Comuns no CI/CD
-
-#### GitHub Actions não executando
-```bash
-# Verificar secrets configurados
-# Ir para Settings > Secrets and variables > Actions
-
-# Verificar se o workflow está correto
-# Validar YAML syntax online
-```
-
-#### Deploy falhando no GKE
-```bash
-# Verificar credenciais
-kubectl config current-context
-
-# Verificar se o cluster existe
-gcloud container clusters list
-
-# Verificar logs do deployment
-kubectl describe deployment devops-app -n devops-app
-kubectl logs -l app=devops-app -n devops-app
-```
-
-### Problemas Comuns no Monitoramento
-
-#### Prometheus não coletando métricas
-```bash
-# Verificar se o endpoint /metrics está acessível
-kubectl port-forward -n devops-app svc/devops-app-service 3000:80
-curl http://localhost:3000/metrics
-
-# Verificar configuração do Prometheus
-kubectl logs -n monitoring deployment/prometheus
-kubectl get configmap prometheus-config -n monitoring -o yaml
-```
-
-#### Grafana não conectando ao Prometheus
-```bash
-# Verificar se o serviço do Prometheus está respondendo
-kubectl exec -n monitoring deployment/grafana -- curl http://prometheus:9090/api/v1/query?query=up
-
-# Verificar configuração do datasource
-kubectl get configmap grafana-config -n monitoring -o yaml
-```
-
-### Problemas Comuns no Istio
-
-#### Sidecar não injetado
-```bash
-# Verificar label do namespace
-kubectl get namespace devops-app --show-labels
-
-# Verificar configuração do webhook
-kubectl get mutatingwebhookconfiguration istio-sidecar-injector -o yaml
-
-# Forçar recreação do pod
-kubectl delete pod -l app=devops-app -n devops-app
-```
-
-#### Traffic não chegando
-```bash
-# Verificar gateway
-kubectl get gateway -n devops-app
-
-# Verificar virtual service
-kubectl get virtualservice -n devops-app
-
-# Debug de configuração
-istioctl analyze -n devops-app
-
-# Verificar logs do proxy
-kubectl logs <pod-name> -c istio-proxy -n devops-app
-```
-
-#### mTLS não funcionando
-```bash
-# Verificar status TLS
+# Verificar mTLS
 istioctl authn tls-check devops-app-service.devops-app.svc.cluster.local
-
-# Verificar peer authentication
-kubectl get peerauthentication -n devops-app
 
 # Ver certificados
 istioctl proxy-config secret <pod-name> -n devops-app
@@ -2396,12 +1650,19 @@ istioctl proxy-config secret <pod-name> -n devops-app
 
 ---
 
-## Comandos Úteis
+## 💻 Comandos Úteis
 
-### Docker
+### 🐳 Docker
+
 ```bash
-# Build e execução
+# Build e tag
 docker build -t devops-app-gcp:v1.0 .
+docker tag devops-app-gcp:v1.0 gcr.io/$PROJECT_ID/devops-app-gcp:v1.0
+
+# Push para Container Registry
+docker push gcr.io/$PROJECT_ID/devops-app-gcp:v1.0
+
+# Executar localmente
 docker run -p 3000:3000 devops-app-gcp:v1.0
 
 # Debugging
@@ -2412,10 +1673,38 @@ docker logs <container-id>
 docker stop <container-id>
 docker rm <container-id>
 docker rmi devops-app-gcp:v1.0
+docker system prune -a
 ```
 
-### Kubernetes
+### 🏗️ Terraform
+
 ```bash
+# Workflow básico
+terraform init
+terraform plan
+terraform apply
+terraform destroy
+
+# Verificar estado
+terraform show
+terraform state list
+
+# Outputs
+terraform output
+terraform output -raw instance_ip
+
+# Formatação e validação
+terraform fmt
+terraform validate
+```
+
+### ☸️ Kubernetes
+
+```bash
+# Contexts e clusters
+kubectl config get-contexts
+kubectl config use-context <context-name>
+
 # Recursos
 kubectl get all -n devops-app
 kubectl describe deployment devops-app -n devops-app
@@ -2434,9 +1723,34 @@ kubectl scale deployment devops-app --replicas=5 -n devops-app
 kubectl rollout status deployment/devops-app -n devops-app
 kubectl rollout history deployment/devops-app -n devops-app
 kubectl rollout undo deployment/devops-app -n devops-app
+
+# Debugging
+kubectl exec -it <pod-name> -n devops-app -- sh
+kubectl get events -n devops-app --sort-by='.lastTimestamp'
 ```
 
-### Istio
+### ☁️ GCP
+
+```bash
+# Projetos
+gcloud projects list
+gcloud config set project <project-id>
+
+# Compute Engine
+gcloud compute instances list
+gcloud compute ssh <instance-name>
+
+# GKE
+gcloud container clusters list
+gcloud container clusters get-credentials <cluster-name> --region=<region>
+
+# Container Registry
+gcloud container images list
+gcloud container images delete <image-url>
+```
+
+### 🕸️ Istio
+
 ```bash
 # Análise de configuração
 istioctl analyze
@@ -2449,25 +1763,246 @@ istioctl proxy-config cluster <pod-name> -n devops-app
 
 # Verificar mTLS
 istioctl authn tls-check <service-name>.<namespace>.svc.cluster.local
+
+# Debug
+istioctl proxy-status
+istioctl dashboard kiali
 ```
 
 ---
 
-### Próximos Passos
+## 🔧 Troubleshooting
 
-1. **Implementar canary deployments avançados**
-2. **Configurar disaster recovery**
-3. **Otimizar custos e performance**
-4. **Implementar security policies avançadas**
+### 🐳 Docker build falha
 
-### Recursos para Estudo Contínuo
+**Problema:** Build do Docker falha ou demora muito
 
-- [Documentação oficial do Istio](https://istio.io/docs/)
-- [Prometheus Documentation](https://prometheus.io/docs/)
-- [GitHub Actions Documentation](https://docs.github.com/en/actions)
-- Certificações: CKAD, CKS, Google Cloud Professional
-- Livros: "Istio: Up and Running", "Production Kubernetes"
+```bash
+# Verificar Dockerfile
+cat Dockerfile
+
+# Build com logs detalhados
+docker build --no-cache -t devops-app-gcp:v1.0 .
+
+# Verificar espaço em disco
+docker system df
+docker system prune
+```
+
+### 🏗️ Terraform apply falha
+
+**Problema:** Terraform não consegue aplicar mudanças
+
+```bash
+# Verificar credenciais
+gcloud auth list
+gcloud config list
+
+# Verificar APIs habilitadas
+gcloud services list --enabled
+
+# Verificar quotas
+gcloud compute project-info describe --project=$PROJECT_ID
+
+# Reinicializar
+terraform init -reconfigure
+```
+
+### ☸️ Pods em estado Pending
+
+**Problema:** Pods ficam em estado Pending no Kubernetes
+
+```bash
+# Verificar events
+kubectl get events -n devops-app --sort-by='.lastTimestamp'
+
+# Verificar recursos dos nodes
+kubectl top nodes
+kubectl describe nodes
+
+# Verificar pod específico
+kubectl describe pod <pod-name> -n devops-app
+```
+
+### 🔄 GitHub Actions falhando
+
+**Problema:** Pipeline de CI/CD falha
+
+```bash
+# Verificar secrets configurados
+# Ir para Settings > Secrets and variables > Actions
+
+# Testar localmente
+act -l  # Lista workflows
+act push  # Simula push event
+
+# Verificar logs detalhados no GitHub Actions
+```
+
+### 📊 Prometheus não coletando métricas
+
+**Problema:** Prometheus não consegue coletar métricas da aplicação
+
+```bash
+# Verificar se o endpoint /metrics está acessível
+kubectl port-forward -n devops-app svc/devops-app-service 3000:80
+curl http://localhost:3000/metrics
+
+# Verificar configuração do Prometheus
+kubectl logs -n monitoring deployment/prometheus
+kubectl get configmap prometheus-config -n monitoring -o yaml
+
+# Verificar service discovery
+kubectl get endpoints -n devops-app
+```
+
+### 📈 Grafana não conectando ao Prometheus
+
+**Problema:** Grafana não consegue se conectar ao Prometheus
+
+```bash
+# Verificar se o serviço do Prometheus está respondendo
+kubectl exec -n monitoring deployment/grafana -- curl http://prometheus:9090/api/v1/query?query=up
+
+# Verificar configuração do datasource
+kubectl get configmap grafana-config -n monitoring -o yaml
+
+# Reiniciar Grafana
+kubectl rollout restart deployment/grafana -n monitoring
+```
+
+### 🕸️ Istio sidecar não injetado
+
+**Problema:** Sidecar do Istio não está sendo injetado nos pods
+
+```bash
+# Verificar label do namespace
+kubectl get namespace devops-app --show-labels
+
+# Adicionar label se necessário
+kubectl label namespace devops-app istio-injection=enabled --overwrite
+
+# Verificar configuração do webhook
+kubectl get mutatingwebhookconfiguration istio-sidecar-injector -o yaml
+
+# Forçar recreação do pod
+kubectl delete pod -l app=devops-app -n devops-app
+
+# Debug de configuração
+istioctl analyze -n devops-app
+```
+
+### 🔒 mTLS não funcionando
+
+**Problema:** Comunicação mTLS entre serviços falha
+
+```bash
+# Verificar status TLS
+istioctl authn tls-check devops-app-service.devops-app.svc.cluster.local
+
+# Verificar peer authentication
+kubectl get peerauthentication -n devops-app
+
+# Ver certificados
+istioctl proxy-config secret <pod-name> -n devops-app
+
+# Verificar logs do proxy
+kubectl logs <pod-name> -c istio-proxy -n devops-app
+```
 
 ---
 
-**Nota**: Este tutorial fornece uma base sólida para implementação de DevOps moderno. Adapte as configurações conforme suas necessidades específicas e sempre teste em ambientes de desenvolvimento antes de aplicar em produção.
+## 🧹 Limpeza de Recursos
+
+### ⚠️ IMPORTANTE: Evitar Custos Desnecessários
+
+Execute a limpeza para evitar cobranças no GCP!
+
+```bash
+# 1. Deletar recursos Kubernetes
+kubectl delete namespace devops-app
+kubectl delete namespace monitoring
+kubectl delete namespace istio-system
+
+# 2. Destruir infraestrutura Terraform
+cd terraform
+terraform destroy -auto-approve
+
+# 3. Deletar imagens do Container Registry
+gcloud container images delete gcr.io/$PROJECT_ID/devops-app-gcp:v1.0 --force-delete-tags
+
+# 4. Verificar recursos restantes
+gcloud compute instances list
+gcloud container clusters list
+gcloud compute networks list
+gcloud compute disks list
+
+# 5. Deletar projeto (opcional - remove tudo)
+gcloud projects delete $PROJECT_ID
+```
+
+### 💰 Verificação de Custos
+
+Antes de fazer a limpeza, você pode verificar os custos:
+
+```bash
+# Ver custos do projeto
+gcloud billing projects describe $PROJECT_ID
+
+# Listar recursos que geram custos
+gcloud compute instances list
+gcloud container clusters list
+gcloud compute disks list
+gcloud compute addresses list
+```
+
+---
+
+## 🎓 Próximos Passos
+
+### 📚 Recursos de Estudo
+
+- [Documentação Oficial do Istio](https://istio.io/docs/)
+- [Prometheus Documentation](https://prometheus.io/docs/)
+- [GitHub Actions Documentation](https://docs.github.com/en/actions)
+- [Kubernetes Documentation](https://kubernetes.io/docs/)
+- [Terraform Documentation](https://www.terraform.io/docs)
+- [Google Cloud Documentation](https://cloud.google.com/docs)
+
+### 🏆 Certificações Recomendadas
+
+- **CKAD** - Certified Kubernetes Application Developer
+- **CKS** - Certified Kubernetes Security Specialist
+- **Google Cloud Professional** - Cloud Architect
+- **Google Cloud Professional** - DevOps Engineer
+- **Terraform Associate** - HashiCorp Certified
+
+### 📖 Livros Recomendados
+
+- "Istio: Up and Running" - Lee Calcote & Zack Butcher
+- "Production Kubernetes" - Josh Rosso, Rich Lander, Alex Brand, John Harris
+- "The DevOps Handbook" - Gene Kim, Jez Humble, Patrick Debois
+- "Site Reliability Engineering" - Google
+- "Kubernetes Patterns" - Bilgin Ibryam & Roland Huß
+  
+---
+
+## 📝 Notas Finais
+
+**Este tutorial fornece uma base sólida para implementação de DevOps moderno.** Adapte as configurações conforme suas necessidades específicas e sempre teste em ambientes de desenvolvimento antes de aplicar em produção.
+
+### 🤝 Contribuindo
+
+Encontrou algum problema ou tem sugestões? Abra uma issue no GitHub!
+
+### 📄 Licença
+
+Este projeto está sob a licença MIT.
+
+### 👏 Agradecimentos
+
+Feito com ❤️ para a comunidade DevOps brasileira!
+
+---
+
+**⭐ Se este guia foi útil, dê uma estrela no [repositório GitHub](https://github.com/camilla-m/devops-app-gcp)!**
