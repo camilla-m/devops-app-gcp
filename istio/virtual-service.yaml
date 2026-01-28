@@ -8,7 +8,7 @@ spec:
   hosts:
   - "devops-app.local"
   gateways:
-  - app-gateway
+  - devops-app-gateway
   http:
   - route:
     - destination:

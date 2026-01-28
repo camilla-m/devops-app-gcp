@@ -1410,107 +1410,73 @@ echo "Prometheus: http://$PROMETHEUS_IP:9090"
 ### 📦 Instalação do Istio
 
 ```bash
-# Habilitar APIs necessárias
-gcloud services enable container.googleapis.com
-gcloud services enable gkehub.googleapis.com
-gcloud services enable mesh.googleapis.com
+gcloud services enable container.googleapis.com gkehub.googleapis.com mesh.googleapis.com
 
-# Download e instalação do Istio
+# Download e configuração do binário Istio
 curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.19.3 sh -
 cd istio-1.19.3
 export PATH=$PWD/bin:$PATH
 
-# Verificar instalação
-istioctl version --remote=false
+# Redimensionar cluster se necessário (GDE Lab mode)
+gcloud container clusters resize [CLUSTER_NAME] --num-nodes=3
 
-# Instalar com perfil demo
+# Instalação Minimalista (Baixo Consumo de CPU/RAM)Fundamental para evitar erros de context deadline exceeded no Cloud Shell.Bash
+
 istioctl install -y --set profile=minimal \
   --set values.pilot.resources.requests.cpu=10m \
   --set values.pilot.resources.requests.memory=128Mi \
-  --set values.pilot.resources.limits.cpu=500m \
-  --set values.pilot.resources.limits.memory=512Mi
-
-# Se acima não funcionar, tente:
-
-gcloud container clusters resize [CLUSTER_NAME] --num-nodes=3
-gcloud container clusters get-credentials [CLUSTER_NAME]
-
-# Verificar componentes instalados após finalizar Istio
-kubectl get pods -n istio-system
+  --set components.ingressGateways[0].enabled=true \
+  --set components.ingressGateways[0].name=istio-ingressgateway \
+  --set components.ingressGateways[0].k8s.resources.requests.cpu=10m
 ```
 
-### 🔄 Configuração de Sidecar Proxy Automático
+### Gestão de Sidecars e Identidade1. Injeção de Proxy
 
 ```bash
-# Habilitar sidecar injection no namespace
-kubectl label namespace devops-app istio-injection=enabled
+kubectl label namespace devops-app istio-injection=enabled --overwrite
 
-# Verificar label no namespace
-kubectl get namespace devops-app --show-labels
+# Reiniciar pods para aplicar o sidecar (crucial para mTLS e Observabilidade)
+kubectl rollout restart deployment -n devops-app
 
-# Redeploy da aplicação para injetar sidecars
-kubectl rollout restart deployment/devops-app -n devops-app
+kubectl patch deployment devops-app -n devops-app -p '{"spec":{"template":{"metadata":{"labels":{"version":"v1"}}}}}'
 
-# Verificar sidecars
-kubectl get pods -n devops-app
-kubectl describe pod <pod-name> -n devops-app
-```
+# Injeção manual para testes rápidos (v2)
 
-### 📊 Observabilidade com Kiali e Jaeger
-
-```bash
-# Instalar addons de observabilidade na pasta do binário do Istio
+kubectl label pod <NOME-DO-POD-CANARY> version=v2 -n devops-app --overwrite
+📊 Observabilidade e DashboardsBash# Instalar addons (Kiali, Jaeger, Prometheus, Grafana)
 kubectl apply -f samples/addons/
-
-# Verificar instalação
-kubectl get pods -n istio-system
-
-# Port forward para acessar UIs
 kubectl port-forward -n istio-system svc/kiali 20001:20001 &
 kubectl port-forward -n istio-system svc/tracing 16685:16685 &
 kubectl port-forward -n istio-system svc/grafana 3000:3000 &
-
-# Instalar Ingress Gateway
-istioctl install -y --set profile=minimal \
-  --set components.ingressGateways[0].enabled=true \
-  --set components.ingressGateways[0].name=istio-ingressgateway \
-  --set components.ingressGateways[0].k8s.resources.requests.cpu=10m \
-  --set components.ingressGateways[0].k8s.resources.requests.memory=64Mi \
-  --set components.ingressGateways[0].k8s.resources.limits.cpu=500m \
-  --set components.ingressGateways[0].k8s.resources.limits.memory=512Mi
-
-# Define pods como v1
-kubectl label pod devops-app-76946549bb-lnrfd version=v1 -n devops-app
-
-# Define pod como v2 (o alvo do seu canary)
-kubectl label pod devops-app-76946549bb-ncccl version=v2 -n devops-app
-
-# Gerar tráfego para visualização
-GATEWAY_IP=$(kubectl get svc istio-ingressgateway -n istio-system -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-
-for i in {1..100}; do
-  curl -H "Host: devops-app.local" http://$GATEWAY_IP/health
-  curl -H "Host: devops-app.local" -H "canary: true" http://$GATEWAY_IP/api/info
-  sleep 1
-done
 ```
 
-### 💻 Testes e Validação
+### Gerador de Tráfego Híbrido
 
 ```bash
-# Obter IP do Gateway
 export GATEWAY_IP=$(kubectl get svc istio-ingressgateway -n istio-system -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 
-# Teste normal (80% v1, 20% v2)
-for i in {1..10}; do
-  curl -s http://$GATEWAY_IP/api/info | jq .version
-done
-
-# Teste com header canary (100% v2)
-for i in {1..5}; do
-  curl -s -H "canary: true" http://$GATEWAY_IP/api/info | jq .version
+# Loop de 100 requisições alternadas
+for i in {1..100}; do
+  echo "Requisição $i"
+  # Tráfego Padrão (Caminho v1)
+  curl -s -o /dev/null -H "Host: devops-app.local" http://$GATEWAY_IP/health
+  
+  # Tráfego Canário (Caminho v2 via Header)
+  curl -s -o /dev/null -H "Host: devops-app.local" -H "canary: true" http://$GATEWAY_IP/api/info
+  
+  sleep 0.5
 done
 ```
+
+### Troubleshooting (Modo Sobrevivência)
+
+```bash
+istioctl analyze -n devops-app
+istioctl proxy-status
+kubectl delete validatingwebhookconfiguration istio-validator-istio-system
+kubectl get pods -n devops-app -L version
+```
+
 ---
 
 ## 💻 Comandos Úteis
