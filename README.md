@@ -1445,8 +1445,9 @@ kubectl patch deployment devops-app -n devops-app -p '{"spec":{"template":{"meta
 kubectl label pod <NOME-DO-POD-CANARY> version=v2 -n devops-app --overwrite
 📊 Observabilidade e DashboardsBash# Instalar addons (Kiali, Jaeger, Prometheus, Grafana)
 kubectl apply -f samples/addons/
+
 kubectl port-forward -n istio-system svc/kiali 20001:20001 &
-kubectl port-forward -n istio-system svc/tracing 16685:16685 &
+istioctl dashboard jaeger &
 kubectl port-forward -n istio-system svc/grafana 3000:3000 &
 ```
 
