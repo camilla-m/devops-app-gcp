@@ -2,30 +2,28 @@ apiVersion: networking.istio.io/v1beta1
 kind: DestinationRule
 metadata:
   name: devops-app-destination
-  namespace: devops-app
+  namespace: default
 spec:
   host: devops-app-service
-  subsets:
-  - name: v1
-    labels:
-      version: v1
-    trafficPolicy:
-      loadBalancer:
-        simple: LEAST_CONN
-  - name: v2
-    labels:
-      version: v2
-    trafficPolicy:
-      loadBalancer:
-        simple: ROUND_ROBIN
   trafficPolicy:
+    # Configuração de Circuit Breaker (TCP/HTTP)
     connectionPool:
       tcp:
-        maxConnections: 10
+        maxConnections: 100
       http:
         http1MaxPendingRequests: 10
-        maxRequestsPerConnection: 2
-    circuitBreaker:
-      consecutiveErrors: 3
-      interval: 30s
+        maxRequestsPerConnection: 1
+    # Detecção de anomalias (expulsa pods problemáticos)
+    outlierDetection:
+      consecutive5xxErrors: 5
+      interval: 10s
       baseEjectionTime: 30s
+      maxEjectionPercent: 100
+  # Definição das versões para Canary Deployment
+  subsets:
+    - name: v1
+      labels:
+        version: v1
+    - name: v2
+      labels:
+        version: v2
