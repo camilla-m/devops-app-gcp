@@ -1504,6 +1504,35 @@ docker stop <container-id>
 docker rm <container-id>
 docker rmi devops-app-gcp:v1.0
 docker system prune -a
+
+#Producao
+
+# Ver logs dos últimos 15 minutos para debugar um erro recente
+docker logs --since 15m <container_id>
+# Ver logs a partir de uma data específica
+docker logs --since "2026-01-28T15:00:00" <container_id>
+# Extrair apenas o IP do container para testes de rede interna
+docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' <container_id>
+# Verificar se as Variáveis de Ambiente de produção foram injetadas corretamente
+docker inspect --format='{{json .Config.Env}}' <container_id> | jq
+# Monitorar CPU, Memória e I/O de rede de todos os containers ativos
+docker stats --format "table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.NetIO}}"
+# Remove imagens, redes e containers parados (Cuidado: limpa tudo que não é usado)
+docker system prune -a --volumes
+# Remove apenas imagens "dangling" (camadas sem nome geradas por builds falhos)
+docker image prune
+# Mostra quanto espaço imagens, containers e volumes estão ocupando no host
+docker system df
+# Entender o que está ocupando espaço em cada camada (ajuda a otimizar o Dockerfile)
+docker history --human <image_name>
+# Rodar um container temporário de 'curl' dentro da mesma rede do app
+docker run --rm --network <nome_da_rede> curlimages/curl curl -I app-service:3000/healthz
+# Reinicia o container, útil quando o processo travou mas o Docker não percebeu
+docker restart -t 30 <container_id>
+# Salvar o estado do sistema de arquivos de um container que crashou para análise offline
+docker export <container_id> > container_crash_debug.tar
+# Exemplo de Job de produção: executa e se auto-destrói
+docker run --rm --env-file .env my-app-migrate:v1 npm run migrate
 ```
 
 ### 🏗️ Terraform

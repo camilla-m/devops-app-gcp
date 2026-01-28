@@ -97,3 +97,11 @@ if (require.main === module) {
     console.log(`Servidor rodando na porta ${PORT}`);
   });
 }
+
+process.on('SIGTERM', () => {
+  console.log('Recebi sinal de desligamento (SIGTERM)...');
+  server.close(() => {
+    console.log('Conexões encerradas. Tchau!');
+    process.exit(0);
+  });
+});
