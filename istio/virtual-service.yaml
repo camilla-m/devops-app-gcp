@@ -8,16 +8,8 @@ spec:
   hosts:
   - "devops-app.local"
   gateways:
-  - devops-app-gateway # Certifique-se que o nome do Gateway é este
+  - app-gateway
   http:
-  - match:
-    - headers:
-        canary:
-          exact: "true"
-    route:
-    - destination:
-        host: devops-app-service
-        subset: v2
   - route:
     - destination:
         host: devops-app-service
