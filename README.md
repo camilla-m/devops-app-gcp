@@ -1479,6 +1479,12 @@ istioctl install -y --set profile=minimal \
   --set components.ingressGateways[0].k8s.resources.limits.cpu=500m \
   --set components.ingressGateways[0].k8s.resources.limits.memory=512Mi
 
+# Define pods como v1
+kubectl label pod devops-app-76946549bb-lnrfd version=v1 -n devops-app
+
+# Define pod como v2 (o alvo do seu canary)
+kubectl label pod devops-app-76946549bb-ncccl version=v2 -n devops-app
+
 # Gerar tráfego para visualização
 GATEWAY_IP=$(kubectl get svc istio-ingressgateway -n istio-system -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 
@@ -1504,10 +1510,6 @@ done
 for i in {1..5}; do
   curl -s -H "canary: true" http://$GATEWAY_IP/api/info | jq .version
 done
-
-# Verifica como o seu Pod enxerga o destino (se via TLS ou Plaintext)
-istioctl proxy-config cluster <NOME-DO-POD> --fqdn devops-app-service.devops-app.svc.cluster.local
-
 ```
 ---
 

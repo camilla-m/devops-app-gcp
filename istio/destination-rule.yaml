@@ -9,7 +9,7 @@ spec:
   subsets:
     - name: v1
       labels:
-        app: devops-app # Usando a label que já existe nos seus pods!
+        version: v1
     - name: v2
       labels:
-        version: v2 # Deixamos essa para o seu teste de canary depois
+        version: v2
