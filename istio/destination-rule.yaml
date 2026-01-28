@@ -2,7 +2,7 @@ apiVersion: networking.istio.io/v1beta1
 kind: DestinationRule
 metadata:
   name: devops-app-destination
-  namespace: default
+  namespace: devops-app
 spec:
   host: devops-app-service
   trafficPolicy:

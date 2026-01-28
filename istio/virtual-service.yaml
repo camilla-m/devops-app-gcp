@@ -1,11 +1,14 @@
-apiVersion: networking.istio.io/v1beta1
+# istio/virtual-service.yaml
+apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: devops-app-vs
+  name: devops-app-routing
   namespace: devops-app
 spec:
   hosts:
-  - devops-app-service
+  - "devops-app.local"
+  gateways:
+  - devops-app-gateway # Certifique-se que o nome do Gateway é este
   http:
   - match:
     - headers:
@@ -15,23 +18,7 @@ spec:
     - destination:
         host: devops-app-service
         subset: v2
-  - match:
-    - uri:
-        prefix: "/api/v2"
-    route:
-    - destination:
-        host: devops-app-service
-        subset: v2
   - route:
     - destination:
         host: devops-app-service
         subset: v1
-      weight: 80
-    - destination:
-        host: devops-app-service
-        subset: v2
-      weight: 20
-    timeout: 10s
-    retries:
-      attempts: 3
-      perTryTimeout: 3s
