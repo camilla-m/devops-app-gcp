@@ -1,21 +1,8 @@
-# istio/security-setup.yaml
 apiVersion: security.istio.io/v1beta1
 kind: PeerAuthentication
 metadata:
-  name: default
+  name: disable-mtls-devops
   namespace: devops-app
 spec:
   mtls:
-    mode: PERMISSIVE
----
-apiVersion: security.istio.io/v1beta1
-kind: AuthorizationPolicy
-metadata:
-  name: allow-gateway-to-app
-  namespace: devops-app
-spec:
-  action: ALLOW
-  rules:
-  - from:
-    - source:
-        namespaces: ["istio-system"] # Permite o Ingress Gateway
+    mode: DISABLE
