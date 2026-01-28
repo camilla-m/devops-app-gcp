@@ -1754,9 +1754,18 @@ istioctl version --remote=false
 
 ```bash
 # Instalar com perfil demo
-istioctl install --set values.defaultRevision=default
+istioctl install -y --set profile=minimal \
+  --set values.pilot.resources.requests.cpu=10m \
+  --set values.pilot.resources.requests.memory=128Mi \
+  --set values.pilot.resources.limits.cpu=500m \
+  --set values.pilot.resources.limits.memory=512Mi
 
-# Verificar componentes instalados
+# Se acima não funcionar, tente:
+
+gcloud container clusters resize [CLUSTER_NAME] --num-nodes=3
+gcloud container clusters get-credentials [CLUSTER_NAME]
+
+# Verificar componentes instalados após finalizar Istio
 kubectl get pods -n istio-system
 ```
 
@@ -1848,7 +1857,7 @@ spec:
 #### Atualizar Service para Múltiplas Versões
 
 ```yaml
-# k8s/service.yaml (atualizado)
+# k8s/service-v2.yaml (atualizado)
 apiVersion: v1
 kind: Service
 metadata:
@@ -2131,128 +2140,6 @@ kubectl port-forward -n istio-system svc/kiali 20001:20001
 # Acessar: http://localhost:20001
 # Navegar para Graph > devops-app namespace
 # Verificar topology e metrics
-```
-
----
-
-## Scripts de Deploy Completo
-
-### Script de Deploy do Istio
-
-Crie o arquivo `scripts/deploy-istio.sh`:
-
-```bash
-#!/bin/bash
-set -e
-
-# Cores para output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m'
-
-echo -e "${GREEN}=== Deploying Istio Service Mesh ===${NC}"
-
-# 1. Verificar se Istio está instalado
-if ! command -v istioctl &> /dev/null; then
-  echo -e "${RED}Istio CLI não encontrado. Instalando...${NC}"
-  curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.19.3 sh -
-  cd istio-1.19.3
-  export PATH=$PWD/bin:$PATH
-fi
-
-# 2. Instalar Istio
-echo -e "${YELLOW}Instalando Istio...${NC}"
-istioctl install --set values.defaultRevision=default -y
-
-# 3. Habilitar sidecar injection
-echo -e "${YELLOW}Habilitando sidecar injection...${NC}"
-kubectl label namespace devops-app istio-injection=enabled --overwrite
-
-# 4. Aplicar configurações Istio
-echo -e "${YELLOW}Aplicando configurações Istio...${NC}"
-kubectl apply -f istio/
-
-# 5. Instalar addons de observabilidade
-echo -e "${YELLOW}Instalando addons de observabilidade...${NC}"
-kubectl apply -f samples/addons/
-
-# 6. Aguardar pods ficarem prontos
-echo -e "${YELLOW}Aguardando pods ficarem prontos...${NC}"
-kubectl wait --for=condition=ready pod -l app=istiod -n istio-system --timeout=300s
-kubectl wait --for=condition=ready pod -l app=kiali -n istio-system --timeout=300s
-
-# 7. Redeploy da aplicação para injetar sidecars
-echo -e "${YELLOW}Redeployando aplicação com sidecars...${NC}"
-kubectl rollout restart deployment/devops-app -n devops-app
-kubectl rollout status deployment/devops-app -n devops-app
-
-# 8. Obter IPs de acesso
-GATEWAY_IP=$(kubectl get svc istio-ingressgateway -n istio-system -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-
-echo -e "${GREEN}=== Deployment Concluído ===${NC}"
-echo -e "Gateway IP: ${GATEWAY_IP}"
-echo -e "Kiali: kubectl port-forward -n istio-system svc/kiali 20001:20001"
-echo -e "Jaeger: kubectl port-forward -n istio-system svc/jaeger 16686:16686"
-echo -e "Grafana: kubectl port-forward -n istio-system svc/grafana 3000:3000"
-
-# 9. Teste básico
-echo -e "${YELLOW}Executando teste básico...${NC}"
-if curl -f -s http://$GATEWAY_IP/health > /dev/null; then
-  echo -e "${GREEN}✓ Aplicação acessível através do Gateway${NC}"
-else
-  echo -e "${RED}✗ Falha ao acessar aplicação${NC}"
-fi
-```
-
-### Script de Deploy Completo
-
-Crie o arquivo `scripts/deploy-all.sh`:
-
-```bash
-#!/bin/bash
-set -e
-
-# Cores para output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m'
-
-echo -e "${GREEN}=== Deploy Completo DevOps Stack ===${NC}"
-
-# 1. Deploy do monitoramento
-echo -e "${YELLOW}Deployando stack de monitoramento...${NC}"
-kubectl apply -f monitoring/
-kubectl wait --for=condition=ready pod -l app=prometheus -n monitoring --timeout=300s
-kubectl wait --for=condition=ready pod -l app=grafana -n monitoring --timeout=300s
-
-# 2. Deploy do Istio
-echo -e "${YELLOW}Deployando Istio Service Mesh...${NC}"
-./scripts/deploy-istio.sh
-
-# 3. Verificar todos os serviços
-echo -e "${YELLOW}Verificando serviços...${NC}"
-kubectl get pods -n devops-app
-kubectl get pods -n monitoring
-kubectl get pods -n istio-system
-
-# 4. Obter URLs de acesso
-echo -e "${GREEN}=== URLs de Acesso ===${NC}"
-
-GRAFANA_IP=$(kubectl get service grafana -n monitoring -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-echo -e "Grafana: http://${GRAFANA_IP}:3000 (admin/admin)"
-
-PROMETHEUS_IP=$(kubectl get service prometheus -n monitoring -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-echo -e "Prometheus: http://${PROMETHEUS_IP}:9090"
-
-GATEWAY_IP=$(kubectl get svc istio-ingressgateway -n istio-system -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-echo -e "Aplicação: http://${GATEWAY_IP}"
-
-echo -e "Kiali: kubectl port-forward -n istio-system svc/kiali 20001:20001"
-echo -e "Jaeger: kubectl port-forward -n istio-system svc/jaeger 16686:16686"
-
-echo -e "${GREEN}Deploy completo finalizado!${NC}"
 ```
 
 ---
