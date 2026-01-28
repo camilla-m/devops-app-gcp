@@ -1430,7 +1430,7 @@ istioctl install -y --set profile=minimal \
   --set components.ingressGateways[0].k8s.resources.requests.cpu=10m
 ```
 
-### Gestão de Sidecars e Identidade1. Injeção de Proxy
+### Gestão de Sidecars e Identidade
 
 ```bash
 kubectl label namespace devops-app istio-injection=enabled --overwrite
