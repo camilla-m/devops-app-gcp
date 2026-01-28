@@ -980,63 +980,54 @@ Atualize o `server.js` para incluir métricas Prometheus:
 
 ```javascript
 const express = require('express');
-const path = require('path');
-const promClient = require('prom-client');
+const client = require('prom-client');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Configurar coleta de métricas padrão
-promClient.collectDefaultMetrics();
+// Configuração do Prometheus
+const register = new client.Registry();
+client.collectDefaultMetrics({ register });
 
-// Criar métricas customizadas
-const httpRequestDuration = new promClient.Histogram({
+// Middlewares
+app.use(express.json());
+
+// Métricas customizadas
+const httpRequestDuration = new client.Histogram({
   name: 'http_request_duration_seconds',
   help: 'Duration of HTTP requests in seconds',
-  labelNames: ['method', 'route', 'status'],
-  buckets: [0.1, 0.5, 1, 2, 5]
+  labelNames: ['method', 'status_code'],
+  registers: [register]
 });
 
-const httpRequestTotal = new promClient.Counter({
+const httpRequestsTotal = new client.Counter({
   name: 'http_requests_total',
   help: 'Total number of HTTP requests',
-  labelNames: ['method', 'route', 'status']
-});
-
-const activeConnections = new promClient.Gauge({
-  name: 'active_connections',
-  help: 'Number of active connections'
+  labelNames: ['method', 'status_code'],
+  registers: [register]
 });
 
 // Middleware para métricas
 app.use((req, res, next) => {
   const start = Date.now();
-  activeConnections.inc();
-
+  
   res.on('finish', () => {
     const duration = (Date.now() - start) / 1000;
-    const route = req.route?.path || req.path;
+    httpRequestDuration
+      .labels(req.method, res.statusCode)
+      .observe(duration);
     
-    httpRequestDuration.observe(
-      { method: req.method, route, status: res.statusCode },
-      duration
-    );
-    
-    httpRequestTotal.inc({
-      method: req.method,
-      route,
-      status: res.statusCode
-    });
-    
-    activeConnections.dec();
+    httpRequestsTotal
+      .labels(req.method, res.statusCode)
+      .inc();
   });
   
   next();
 });
 
-app.use(express.static('public'));
-
+// Rotas
 app.get('/health', (req, res) => {
-  res.status(200).json({
+  res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
     uptime: process.uptime()
@@ -1045,41 +1036,48 @@ app.get('/health', (req, res) => {
 
 app.get('/api/info', (req, res) => {
   res.json({
-    app: 'DevOps App GCP',
-    version: '1.0.0',
+    app: 'DevOps App GCP Aula 4',
+    version: '2.0.0',
     environment: process.env.NODE_ENV || 'development',
-    pod: process.env.HOSTNAME || 'localhost'
+    timestamp: new Date().toISOString()
   });
 });
 
-// Endpoint de métricas
 app.get('/metrics', async (req, res) => {
-  res.set('Content-Type', promClient.register.contentType);
   try {
-    const metrics = await promClient.register.metrics();
-    res.end(metrics);
+    res.set('Content-Type', register.contentType);
+    res.end(await register.metrics());
   } catch (error) {
-    res.status(500).end(error);
+    res.status(500).end(error.message);
   }
 });
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-const server = app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
-});
-
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('SIGTERM received, shutting down gracefully');
-  server.close(() => {
-    console.log('Process terminated');
+// Middleware 404
+app.use((req, res) => {
+  res.status(404).json({
+    error: 'Not Found',
+    message: 'The requested resource was not found'
   });
 });
 
+// Middleware de erro
+app.use((error, req, res, next) => {
+  console.error('Error:', error);
+  res.status(500).json({
+    error: 'Internal Server Error',
+    message: 'Something went wrong'
+  });
+});
+
+// Exportar app para testes
 module.exports = app;
+
+// Iniciar servidor apenas se executado diretamente
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Servidor rodando na porta ${PORT}`);
+  });
+}
 ```
 
 ### 📄 Configuração do Prometheus
@@ -1096,6 +1094,15 @@ metadata:
 ```
 
 #### `monitoring/prometheus-config.yaml`
+
+
+Execute:
+
+```
+kubectl create -f monitoring/
+```
+
+Para os arquivos:
 
 ```yaml
 apiVersion: v1
@@ -1417,9 +1424,18 @@ export PATH=$PWD/bin:$PATH
 istioctl version --remote=false
 
 # Instalar com perfil demo
-istioctl install --set values.defaultRevision=default
+istioctl install -y --set profile=minimal \
+  --set values.pilot.resources.requests.cpu=10m \
+  --set values.pilot.resources.requests.memory=128Mi \
+  --set values.pilot.resources.limits.cpu=500m \
+  --set values.pilot.resources.limits.memory=512Mi
 
-# Verificar componentes instalados
+# Se acima não funcionar, tente:
+
+gcloud container clusters resize [CLUSTER_NAME] --num-nodes=3
+gcloud container clusters get-credentials [CLUSTER_NAME]
+
+# Verificar componentes instalados após finalizar Istio
 kubectl get pods -n istio-system
 ```
 

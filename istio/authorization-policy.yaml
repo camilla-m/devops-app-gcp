@@ -1,0 +1,24 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: devops-app-authz
+  namespace: devops-app
+spec:
+  selector:
+    matchLabels:
+      app: devops-app
+  rules:
+  - from:
+    - source:
+        principals: ["cluster.local/ns/devops-app/sa/default"]
+    to:
+    - operation:
+        methods: ["GET", "POST"]
+        paths: ["/health", "/api/*"]
+  - from:
+    - source:
+        namespaces: ["istio-system"]
+    to:
+    - operation:
+        methods: ["GET"]
+        paths: ["/health", "/metrics"]
