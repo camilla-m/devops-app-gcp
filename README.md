@@ -1585,7 +1585,7 @@ metadata:
   namespace: devops-app
 spec:
   mtls:
-    mode: STRICT
+    mode: PERMISSIVE
 ```
 
 #### `istio/authorization-policy.yaml`
@@ -1594,27 +1594,14 @@ spec:
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
-  name: devops-app-authz
-  namespace: devops-app
+  name: allow-all-ingress
+  namespace: default # Mude se seu app estiver em outro namespace
 spec:
-  selector:
-    matchLabels:
-      app: devops-app
+  action: ALLOW
   rules:
   - from:
     - source:
-        principals: ["cluster.local/ns/devops-app/sa/default"]
-    to:
-    - operation:
-        methods: ["GET", "POST"]
-        paths: ["/health", "/api/*"]
-  - from:
-    - source:
-        namespaces: ["istio-system"]
-    to:
-    - operation:
-        methods: ["GET"]
-        paths: ["/health", "/metrics"]
+        namespaces: ["istio-system"] # Permite tráfego vindo do Gateway que está no istio-system
 ```
 
 ### 📊 Observabilidade com Kiali e Jaeger
@@ -1630,6 +1617,15 @@ kubectl get pods -n istio-system
 kubectl port-forward -n istio-system svc/kiali 20001:20001 &
 kubectl port-forward -n istio-system svc/tracing 16685:16685 &
 kubectl port-forward -n istio-system svc/grafana 3000:3000 &
+
+# Instalar Ingress Gateway
+istioctl install -y --set profile=minimal \
+  --set components.ingressGateways[0].enabled=true \
+  --set components.ingressGateways[0].name=istio-ingressgateway \
+  --set components.ingressGateways[0].k8s.resources.requests.cpu=10m \
+  --set components.ingressGateways[0].k8s.resources.requests.memory=64Mi \
+  --set components.ingressGateways[0].k8s.resources.limits.cpu=500m \
+  --set components.ingressGateways[0].k8s.resources.limits.memory=512Mi
 
 # Gerar tráfego para visualização
 GATEWAY_IP=$(kubectl get svc istio-ingressgateway -n istio-system -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
