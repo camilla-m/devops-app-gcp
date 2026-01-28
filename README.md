@@ -1620,7 +1620,7 @@ spec:
 ### 📊 Observabilidade com Kiali e Jaeger
 
 ```bash
-# Instalar addons de observabilidade
+# Instalar addons de observabilidade na pasta do binário do Istio
 kubectl apply -f samples/addons/
 
 # Verificar instalação
@@ -1628,7 +1628,7 @@ kubectl get pods -n istio-system
 
 # Port forward para acessar UIs
 kubectl port-forward -n istio-system svc/kiali 20001:20001 &
-kubectl port-forward -n istio-system svc/jaeger 16686:16686 &
+kubectl port-forward -n istio-system svc/tracing 16685:16685 &
 kubectl port-forward -n istio-system svc/grafana 3000:3000 &
 
 # Gerar tráfego para visualização

@@ -1,24 +1,11 @@
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
-  name: devops-app-authz
-  namespace: devops-app
+  name: allow-all-ingress
+  namespace: default # Mude se seu app estiver em outro namespace
 spec:
-  selector:
-    matchLabels:
-      app: devops-app
+  action: ALLOW
   rules:
   - from:
     - source:
-        principals: ["cluster.local/ns/devops-app/sa/default"]
-    to:
-    - operation:
-        methods: ["GET", "POST"]
-        paths: ["/health", "/api/*"]
-  - from:
-    - source:
-        namespaces: ["istio-system"]
-    to:
-    - operation:
-        methods: ["GET"]
-        paths: ["/health", "/metrics"]
+        namespaces: ["istio-system"] # Permite tráfego vindo do Gateway que está no istio-system
