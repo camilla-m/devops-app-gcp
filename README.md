@@ -1418,7 +1418,7 @@ cd istio-1.19.3
 export PATH=$PWD/bin:$PATH
 
 # Redimensionar cluster se necessário (GDE Lab mode)
-gcloud container clusters resize [CLUSTER_NAME] --num-nodes=3
+gcloud container clusters resize [CLUSTER_NAME] --num-nodes=3 --location us-central1
 
 # Instalação Minimalista (Baixo Consumo de CPU/RAM)Fundamental para evitar erros de context deadline exceeded no Cloud Shell.Bash
 
