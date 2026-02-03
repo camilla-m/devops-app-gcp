@@ -980,63 +980,54 @@ Atualize o `server.js` para incluir métricas Prometheus:
 
 ```javascript
 const express = require('express');
-const path = require('path');
-const promClient = require('prom-client');
+const client = require('prom-client');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Configurar coleta de métricas padrão
-promClient.collectDefaultMetrics();
+// Configuração do Prometheus
+const register = new client.Registry();
+client.collectDefaultMetrics({ register });
 
-// Criar métricas customizadas
-const httpRequestDuration = new promClient.Histogram({
+// Middlewares
+app.use(express.json());
+
+// Métricas customizadas
+const httpRequestDuration = new client.Histogram({
   name: 'http_request_duration_seconds',
   help: 'Duration of HTTP requests in seconds',
-  labelNames: ['method', 'route', 'status'],
-  buckets: [0.1, 0.5, 1, 2, 5]
+  labelNames: ['method', 'status_code'],
+  registers: [register]
 });
 
-const httpRequestTotal = new promClient.Counter({
+const httpRequestsTotal = new client.Counter({
   name: 'http_requests_total',
   help: 'Total number of HTTP requests',
-  labelNames: ['method', 'route', 'status']
-});
-
-const activeConnections = new promClient.Gauge({
-  name: 'active_connections',
-  help: 'Number of active connections'
+  labelNames: ['method', 'status_code'],
+  registers: [register]
 });
 
 // Middleware para métricas
 app.use((req, res, next) => {
   const start = Date.now();
-  activeConnections.inc();
-
+  
   res.on('finish', () => {
     const duration = (Date.now() - start) / 1000;
-    const route = req.route?.path || req.path;
+    httpRequestDuration
+      .labels(req.method, res.statusCode)
+      .observe(duration);
     
-    httpRequestDuration.observe(
-      { method: req.method, route, status: res.statusCode },
-      duration
-    );
-    
-    httpRequestTotal.inc({
-      method: req.method,
-      route,
-      status: res.statusCode
-    });
-    
-    activeConnections.dec();
+    httpRequestsTotal
+      .labels(req.method, res.statusCode)
+      .inc();
   });
   
   next();
 });
 
-app.use(express.static('public'));
-
+// Rotas
 app.get('/health', (req, res) => {
-  res.status(200).json({
+  res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
     uptime: process.uptime()
@@ -1045,41 +1036,48 @@ app.get('/health', (req, res) => {
 
 app.get('/api/info', (req, res) => {
   res.json({
-    app: 'DevOps App GCP',
-    version: '1.0.0',
+    app: 'DevOps App GCP Aula 4',
+    version: '2.0.0',
     environment: process.env.NODE_ENV || 'development',
-    pod: process.env.HOSTNAME || 'localhost'
+    timestamp: new Date().toISOString()
   });
 });
 
-// Endpoint de métricas
 app.get('/metrics', async (req, res) => {
-  res.set('Content-Type', promClient.register.contentType);
   try {
-    const metrics = await promClient.register.metrics();
-    res.end(metrics);
+    res.set('Content-Type', register.contentType);
+    res.end(await register.metrics());
   } catch (error) {
-    res.status(500).end(error);
+    res.status(500).end(error.message);
   }
 });
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-const server = app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
-});
-
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('SIGTERM received, shutting down gracefully');
-  server.close(() => {
-    console.log('Process terminated');
+// Middleware 404
+app.use((req, res) => {
+  res.status(404).json({
+    error: 'Not Found',
+    message: 'The requested resource was not found'
   });
 });
 
+// Middleware de erro
+app.use((error, req, res, next) => {
+  console.error('Error:', error);
+  res.status(500).json({
+    error: 'Internal Server Error',
+    message: 'Something went wrong'
+  });
+});
+
+// Exportar app para testes
 module.exports = app;
+
+// Iniciar servidor apenas se executado diretamente
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Servidor rodando na porta ${PORT}`);
+  });
+}
 ```
 
 ### 📄 Configuração do Prometheus
@@ -1096,6 +1094,15 @@ metadata:
 ```
 
 #### `monitoring/prometheus-config.yaml`
+
+
+Execute:
+
+```
+kubectl create -f monitoring/
+```
+
+Para os arquivos:
 
 ```yaml
 apiVersion: v1
@@ -1403,249 +1410,72 @@ echo "Prometheus: http://$PROMETHEUS_IP:9090"
 ### 📦 Instalação do Istio
 
 ```bash
-# Habilitar APIs necessárias
-gcloud services enable container.googleapis.com
-gcloud services enable gkehub.googleapis.com
-gcloud services enable mesh.googleapis.com
+gcloud services enable container.googleapis.com gkehub.googleapis.com mesh.googleapis.com
 
-# Download e instalação do Istio
+# Download e configuração do binário Istio
 curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.19.3 sh -
 cd istio-1.19.3
 export PATH=$PWD/bin:$PATH
 
-# Verificar instalação
-istioctl version --remote=false
+# Redimensionar cluster se necessário (GDE Lab mode)
+gcloud container clusters resize [CLUSTER_NAME] --num-nodes=3 --location us-central1
 
-# Instalar com perfil demo
-istioctl install --set values.defaultRevision=default
+# Instalação Minimalista (Baixo Consumo de CPU/RAM)Fundamental para evitar erros de context deadline exceeded no Cloud Shell.Bash
 
-# Verificar componentes instalados
-kubectl get pods -n istio-system
+istioctl install -y --set profile=minimal \
+  --set values.pilot.resources.requests.cpu=10m \
+  --set values.pilot.resources.requests.memory=128Mi \
+  --set components.ingressGateways[0].enabled=true \
+  --set components.ingressGateways[0].name=istio-ingressgateway \
+  --set components.ingressGateways[0].k8s.resources.requests.cpu=10m
 ```
 
-### 🔄 Configuração de Sidecar Proxy Automático
+### Gestão de Sidecars e Identidade
 
 ```bash
-# Habilitar sidecar injection no namespace
-kubectl label namespace devops-app istio-injection=enabled
+kubectl label namespace devops-app istio-injection=enabled --overwrite
 
-# Verificar label no namespace
-kubectl get namespace devops-app --show-labels
+# Reiniciar pods para aplicar o sidecar (crucial para mTLS e Observabilidade)
+kubectl rollout restart deployment -n devops-app
 
-# Redeploy da aplicação para injetar sidecars
-kubectl rollout restart deployment/devops-app -n devops-app
+kubectl patch deployment devops-app -n devops-app -p '{"spec":{"template":{"metadata":{"labels":{"version":"v1"}}}}}'
 
-# Verificar sidecars
-kubectl get pods -n devops-app
-kubectl describe pod <pod-name> -n devops-app
-```
+# Injeção manual para testes rápidos (v2)
 
-### 📄 Traffic Management
+📊 Observabilidade e DashboardsBash# Instalar addons (Kiali, Jaeger, Prometheus, Grafana)
+kubectl apply -f samples/addons/ #na pasta do binario do istio
+kubectl apply -f istio/ #na pasta do devops app gcp
 
-#### `istio/destination-rule.yaml`
-
-```yaml
-apiVersion: networking.istio.io/v1beta1
-kind: DestinationRule
-metadata:
-  name: devops-app-destination
-  namespace: devops-app
-spec:
-  host: devops-app-service
-  subsets:
-  - name: v1
-    labels:
-      version: v1
-    trafficPolicy:
-      loadBalancer:
-        simple: LEAST_CONN
-  - name: v2
-    labels:
-      version: v2
-    trafficPolicy:
-      loadBalancer:
-        simple: ROUND_ROBIN
-  trafficPolicy:
-    connectionPool:
-      tcp:
-        maxConnections: 10
-      http:
-        http1MaxPendingRequests: 10
-        maxRequestsPerConnection: 2
-    circuitBreaker:
-      consecutiveErrors: 3
-      interval: 30s
-      baseEjectionTime: 30s
-```
-
-#### `istio/virtual-service.yaml`
-
-```yaml
-apiVersion: networking.istio.io/v1beta1
-kind: VirtualService
-metadata:
-  name: devops-app-vs
-  namespace: devops-app
-spec:
-  hosts:
-  - devops-app-service
-  http:
-  - match:
-    - headers:
-        canary:
-          exact: "true"
-    route:
-    - destination:
-        host: devops-app-service
-        subset: v2
-  - match:
-    - uri:
-        prefix: "/api/v2"
-    route:
-    - destination:
-        host: devops-app-service
-        subset: v2
-  - route:
-    - destination:
-        host: devops-app-service
-        subset: v1
-      weight: 80
-    - destination:
-        host: devops-app-service
-        subset: v2
-      weight: 20
-    timeout: 10s
-    retries:
-      attempts: 3
-      perTryTimeout: 3s
-```
-
-#### `istio/gateway.yaml`
-
-```yaml
-apiVersion: networking.istio.io/v1beta1
-kind: Gateway
-metadata:
-  name: devops-app-gateway
-  namespace: devops-app
-spec:
-  selector:
-    istio: ingressgateway
-  servers:
-  - port:
-      number: 80
-      name: http
-      protocol: HTTP
-    hosts:
-    - "*"
----
-apiVersion: networking.istio.io/v1beta1
-kind: VirtualService
-metadata:
-  name: devops-app-gateway-vs
-  namespace: devops-app
-spec:
-  hosts:
-  - "*"
-  gateways:
-  - devops-app-gateway
-  http:
-  - route:
-    - destination:
-        host: devops-app-service
-        port:
-          number: 80
-```
-
-### 🔒 mTLS e Segurança
-
-#### `istio/peer-authentication.yaml`
-
-```yaml
-apiVersion: security.istio.io/v1beta1
-kind: PeerAuthentication
-metadata:
-  name: default
-  namespace: devops-app
-spec:
-  mtls:
-    mode: STRICT
-```
-
-#### `istio/authorization-policy.yaml`
-
-```yaml
-apiVersion: security.istio.io/v1beta1
-kind: AuthorizationPolicy
-metadata:
-  name: devops-app-authz
-  namespace: devops-app
-spec:
-  selector:
-    matchLabels:
-      app: devops-app
-  rules:
-  - from:
-    - source:
-        principals: ["cluster.local/ns/devops-app/sa/default"]
-    to:
-    - operation:
-        methods: ["GET", "POST"]
-        paths: ["/health", "/api/*"]
-  - from:
-    - source:
-        namespaces: ["istio-system"]
-    to:
-    - operation:
-        methods: ["GET"]
-        paths: ["/health", "/metrics"]
-```
-
-### 📊 Observabilidade com Kiali e Jaeger
-
-```bash
-# Instalar addons de observabilidade
-kubectl apply -f samples/addons/
-
-# Verificar instalação
-kubectl get pods -n istio-system
-
-# Port forward para acessar UIs
 kubectl port-forward -n istio-system svc/kiali 20001:20001 &
-kubectl port-forward -n istio-system svc/jaeger 16686:16686 &
+istioctl dashboard jaeger &
 kubectl port-forward -n istio-system svc/grafana 3000:3000 &
-
-# Gerar tráfego para visualização
-GATEWAY_IP=$(kubectl get svc istio-ingressgateway -n istio-system -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-
-for i in {1..100}; do
-  curl -H "Host: devops-app.local" http://$GATEWAY_IP/health
-  curl -H "Host: devops-app.local" -H "canary: true" http://$GATEWAY_IP/api/info
-  sleep 1
-done
 ```
 
-### 💻 Testes e Validação
+### Gerador de Tráfego Híbrido
 
 ```bash
-# Obter IP do Gateway
 export GATEWAY_IP=$(kubectl get svc istio-ingressgateway -n istio-system -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 
-# Teste normal (80% v1, 20% v2)
-for i in {1..10}; do
-  curl -s http://$GATEWAY_IP/api/info | jq .version
+# Loop de 100 requisições alternadas
+for i in {1..100}; do
+  echo "Requisição $i"
+  # Tráfego Padrão (Caminho v1)
+  curl -s -o /dev/null -H "Host: devops-app.local" http://$GATEWAY_IP/health
+  
+  # Tráfego Canário (Caminho v2 via Header)
+  curl -s -o /dev/null -H "Host: devops-app.local" -H "canary: true" http://$GATEWAY_IP/api/info
+  
+  sleep 0.5
 done
+```
 
-# Teste com header canary (100% v2)
-for i in {1..5}; do
-  curl -s -H "canary: true" http://$GATEWAY_IP/api/info | jq .version
-done
+### Troubleshooting (Modo Sobrevivência)
 
-# Verificar mTLS
-istioctl authn tls-check devops-app-service.devops-app.svc.cluster.local
-
-# Ver certificados
-istioctl proxy-config secret <pod-name> -n devops-app
+```bash
+istioctl analyze -n devops-app
+istioctl proxy-status
+kubectl delete validatingwebhookconfiguration istio-validator-istio-system
+kubectl get pods -n devops-app -L version
 ```
 
 ---
@@ -1674,6 +1504,35 @@ docker stop <container-id>
 docker rm <container-id>
 docker rmi devops-app-gcp:v1.0
 docker system prune -a
+
+#Producao
+
+# Ver logs dos últimos 15 minutos para debugar um erro recente
+docker logs --since 15m <container_id>
+# Ver logs a partir de uma data específica
+docker logs --since "2026-01-28T15:00:00" <container_id>
+# Extrair apenas o IP do container para testes de rede interna
+docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' <container_id>
+# Verificar se as Variáveis de Ambiente de produção foram injetadas corretamente
+docker inspect --format='{{json .Config.Env}}' <container_id> | jq
+# Monitorar CPU, Memória e I/O de rede de todos os containers ativos
+docker stats --format "table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.NetIO}}"
+# Remove imagens, redes e containers parados (Cuidado: limpa tudo que não é usado)
+docker system prune -a --volumes
+# Remove apenas imagens "dangling" (camadas sem nome geradas por builds falhos)
+docker image prune
+# Mostra quanto espaço imagens, containers e volumes estão ocupando no host
+docker system df
+# Entender o que está ocupando espaço em cada camada (ajuda a otimizar o Dockerfile)
+docker history --human <image_name>
+# Rodar um container temporário de 'curl' dentro da mesma rede do app
+docker run --rm --network <nome_da_rede> curlimages/curl curl -I app-service:3000/healthz
+# Reinicia o container, útil quando o processo travou mas o Docker não percebeu
+docker restart -t 30 <container_id>
+# Salvar o estado do sistema de arquivos de um container que crashou para análise offline
+docker export <container_id> > container_crash_debug.tar
+# Exemplo de Job de produção: executa e se auto-destrói
+docker run --rm --env-file .env my-app-migrate:v1 npm run migrate
 ```
 
 ### 🏗️ Terraform
