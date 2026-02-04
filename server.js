@@ -29,18 +29,18 @@ const httpRequestsTotal = new client.Counter({
 // Middleware para métricas
 app.use((req, res, next) => {
   const start = Date.now();
-  
+
   res.on('finish', () => {
     const duration = (Date.now() - start) / 1000;
     httpRequestDuration
       .labels(req.method, res.statusCode)
       .observe(duration);
-    
+
     httpRequestsTotal
       .labels(req.method, res.statusCode)
       .inc();
   });
-  
+
   next();
 });
 
@@ -91,10 +91,10 @@ app.use((error, req, res, next) => {
 // Exportar app para testes
 module.exports = app;
 
-// Inicialização do Servidor
+if (require.main === module) {
 const server = app.listen(PORT, () => {
-  console.log(JSON.stringify({ 
-    severity: 'INFO', 
+    console.log(JSON.stringify({
+    severity: 'INFO',
     message: `Servidor em produção na porta ${PORT}`,
     node_version: process.version
   }));
@@ -103,7 +103,7 @@ const server = app.listen(PORT, () => {
 // GRACEFUL SHUTDOWN: O "Pulo do Gato" para Produção
 process.on('SIGTERM', () => {
   console.log(JSON.stringify({ severity: 'WARNING', message: 'SIGTERM recebido. Encerrando conexões...' }));
-  
+
   server.close(() => {
     console.log(JSON.stringify({ severity: 'INFO', message: 'Servidor encerrado com sucesso.' }));
     process.exit(0);
@@ -112,3 +112,4 @@ process.on('SIGTERM', () => {
   // Força saída se não fechar em 15s (evita container zumbi)
   setTimeout(() => process.exit(1), 15000);
 });
+}
