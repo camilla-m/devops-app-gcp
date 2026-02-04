@@ -21,7 +21,7 @@ describe('DevOps App', () => {
       
       expect(response.status).toBe(200);
       expect(response.body).toMatchObject({
-        app: 'DevOps App GCP',
+        app: 'DevOps App GCP ',
         version: '1.0.0'
       });
       expect(response.body).toHaveProperty('environment');
