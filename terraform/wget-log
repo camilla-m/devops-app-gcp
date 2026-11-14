@@ -1,0 +1,11 @@
+--2026-11-14 04:32:53--  https://apt.releases.hashicorp.com/gpg
+Resolving apt.releases.hashicorp.com (apt.releases.hashicorp.com)... 3.161.136.29, 3.161.136.66, 3.161.136.61, ...
+Connecting to apt.releases.hashicorp.com (apt.releases.hashicorp.com)|3.161.136.29|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 1725 (1.7K) [application/x-www-form-urlencoded]
+Saving to: ‘STDOUT’
+
+-                     0%[                    ]       0  --.-KB/s               -                   100%[===================>]   1.68K  --.-KB/s    in 0s      
+
+2026-11-14 04:32:53 (2.26 GB/s) - written to stdout [1725/1725]
+

@@ -17,6 +17,6 @@ spec:
     spec:
       containers:
       - name: devops-app
-        image: gcr.io/descomplicando-devops/devops-app-gcp:v1.0
+        image: gcr.io/$PROJECT_ID/devops-app-gcp:v1.0
         ports:
         - containerPort: 8080

@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: devops-app
-        image: gcr.io/PROJECT_ID/devops-app-gcp:v1.0  # Substituir PROJECT_ID
+        image: gcr.io/devops-linuxtips-492800/devops-app-gcp:v1.0  # Substituir devops-linuxtips-492800
         ports:
         - containerPort: 3000
         env:
